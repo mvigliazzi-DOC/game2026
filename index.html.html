@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma de Jogos Técnicos Industriais</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --text-color: #f0f6fc;
+            --accent-color: #58a6ff;
+            --warning-color: #d29922;
+            --danger-color: #f85149;
+            --success-color: #238636;
+            --border-color: #30363d;
+        }
+
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg-color: #f6f8fa;
+                --card-bg: #ffffff;
+                --text-color: #1f2328;
+                --accent-color: #0969da;
+                --warning-color: #9a6700;
+                --danger-color: #cf222e;
+                --success-color: #1f883d;
+                --border-color: #d0d7de;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 20px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        header {
+            text-align: center;
+            max-width: 900px;
+            margin-bottom: 40px;
+        }
+
+        .badge-header {
+            background: var(--accent-color);
+            color: #fff;
+            font-size: 0.8rem;
+            font-weight: bold;
+            padding: 4px 12px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-color);
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
+
+        header h1 span {
+            color: var(--accent-color);
+        }
+
+        header p {
+            color: #8b949e;
+            font-size: 1.1rem;
+            line-height: 1.5;
+        }
+
+        /* --- DASHBOARD / BANNER DE CARDS --- */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 25px;
+            width: 100%;
+            max-width: 1100px;
+            margin-bottom: 40px;
+        }
+
+        .game-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-color);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+        }
+
+        .card-maker::before { background: linear-gradient(90deg, #f85149, #d29922); }
+        .card-pneumatica::before { background: linear-gradient(90deg, #58a6ff, #238636); }
+
+        .game-tag {
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            color: var(--warning-color);
+        }
+
+        .game-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text-color);
+        }
+
+        .game-description {
+            font-size: 0.95rem;
+            color: #8b949e;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        .topics-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 25px;
+        }
+
+        .topic-badge {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        .btn-play {
+            background-color: var(--accent-color);
+            color: #ffffff;
+            text-decoration: none;
+            text-align: center;
+            font-weight: bold;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: opacity 0.2s ease, background-color 0.2s ease;
+            display: block;
+        }
+
+        .btn-play:hover {
+            opacity: 0.9;
+        }
+
+        .btn-pneumatica {
+            background-color: #238636;
+        }
+
+        .btn-pneumatica:hover {
+            background-color: #2ea043;
+        }
+
+        /* --- SESSÃO INFORMATIVA --- */
+        .info-section {
+            width: 100%;
+            max-width: 1100px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 40px;
+        }
+
+        .info-section h3 {
+            color: var(--accent-color);
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .info-item {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .info-item h4 {
+            font-size: 0.95rem;
+            color: var(--warning-color);
+            margin-bottom: 8px;
+        }
+
+        .info-item p {
+            font-size: 0.88rem;
+            color: #8b949e;
+            line-height: 1.4;
+        }
+
+        footer {
+            margin-top: auto;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #8b949e;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.8rem; }
+            .games-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <span class="badge-header">Ensino Técnico Industrial</span>
+        <h1>Plataforma de Simulação & <span>Jogos Técnicos</span></h1>
+        <p>Ambiente interativo de aprendizagem gamificada para automação, fabricação mecânica, usinagem CNC e sistemas pneumáticos.</p>
+    </header>
+
+    <main class="games-grid">
+
+        <!-- CARD 1: GT-Desafio Maker -->
+        <article class="game-card card-maker">
+            <div>
+                <div class="game-tag">⚙️ Usinagem & CAD/CAM</div>
+                <h2 class="game-title">Desafio Maker</h2>
+                <p class="game-description">
+                    Do CAD/CAM ao chão de fábrica! Enfrente desafios técnicos envolvendo parâmetros de corte, metrologia, GD&T, programação ISO CNC e processos de usinagem.
+                </p>
+                <div class="topics-list">
+                    <span class="topic-badge">Programação CNC</span>
+                    <span class="topic-badge">CAD/CAM</span>
+                    <span class="topic-badge">Metrologia</span>
+                    <span class="topic-badge">Parâmetros de Corte</span>
+                    <span class="topic-badge">GD&T</span>
+                    <span class="topic-badge">NR 1 / NR 12</span>
+                </div>
+            </div>
+            <a href="GT-Desafio_Maker_Simulado.html" class="btn-play">Iniciar Desafio Maker ➔</a>
+        </article>
+
+        <!-- CARD 2: GT-Introdução a Pneumática -->
+        <article class="game-card card-pneumatica">
+            <div>
+                <div class="game-tag">💨 Automação Industrial</div>
+                <h2 class="game-title">Pressão Extrema</h2>
+                <p class="game-description">
+                    A batalha da pneumática! Teste seus conhecimentos em compressores, tratamento de ar comprimido, redes de distribuição, válvulas e atuadores pneumáticos.
+                </p>
+                <div class="topics-list">
+                    <span class="topic-badge">Ar Comprimido</span>
+                    <span class="topic-badge">Compressores</span>
+                    <span class="topic-badge">Tratamento de Ar</span>
+                    <span class="topic-badge">Redes Pneumáticas</span>
+                    <span class="topic-badge">Válvulas & Atuadores</span>
+                    <span class="topic-badge">Sway Interativo</span>
+                </div>
+            </div>
+            <a href="GT-Introdução a Pneumática V4 final UPDATE.html" class="btn-play btn-pneumatica">Iniciar Pressão Extrema ➔</a>
+        </article>
+
+    </main>
+
+    <section class="info-section">
+        <h3>💡 Recursos da Plataforma</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <h4>🎯 Modo Treino Individual</h4>
+                <p>Pratique sozinho contra a meta de 75% de aproveitamento técnico e obtenha um diagnóstico detalhado dos seus acertos por tema ao final.</p>
+            </div>
+            <div class="info-item">
+                <h4>🌐 Multi-Jogador em Rede (P2P)</h4>
+                <p>Crie salas de disputa online via WebRTC para até 6 jogadores sem necessidade de cadastros ou servidores externos.</p>
+            </div>
+            <div class="info-item">
+                <h4>📖 Guias & Materiais de Estudo</h4>
+                <p>Acesse resumos teóricos, fórmulas e links para materiais didáticos diretamente durante as partidas para consultar conceitos chave.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>Desenvolvido para Ensino Técnico Industrial • Suporta Modos Local e Multiplayer P2P</p>
+    </footer>
+
+</body>
+</html>
