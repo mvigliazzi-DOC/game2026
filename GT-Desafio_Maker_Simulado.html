@@ -54,6 +54,7 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
+        /* --- SPLASH SCREEN --- */
         #splash-screen {
             position: fixed;
             top: 0; left: 0;
@@ -754,7 +755,7 @@
 </head>
 <body>
 
-    <!-- Splash Screen -->
+    <!-- Splash Screen (5 Segundos) -->
     <div id="splash-screen">
         <div class="splash-badge">⚡ Ensino Técnico Industrial</div>
         <h1 class="splash-title">
@@ -843,25 +844,31 @@
             <div class="dice-display" id="dice-display">Dado: -</div>
         </div>
 
+        <!-- Barra de Progresso dos Jogadores -->
         <div class="progress-tracker" id="progress-tracker"></div>
+
         <div class="players-inputs" id="players-inputs-container"></div>
     </div>
 
     <div class="board-container" id="board"></div>
 
-    <!-- Modais -->
+    <!-- Modal do Modo Treino -->
     <div class="modal" id="treino-orientacao-modal">
         <div class="modal-content treino-card">
             <div class="treino-title">Modo 1 Jogador — Treino</div>
+            
             <div class="treino-quote">
                 "Você jogador está entrando em um universo de estudos que lhe dará a possibilidade de aprender sobre Fabricação Mecânica e CNC. Neste momento você deverá concluir com o aproveitamento de 75% de acertos quando chegar à última casa. Se atingir aproveitamento inferior, o jogo reiniciará automaticamente."
             </div>
+
             <ul class="treino-rules">
                 <li>• <strong>Objetivo:</strong> Alcançar a última casa do tabuleiro.</li>
                 <li>• <strong>Meta de Desempenho:</strong> &ge; 75% de precisão nas respostas.</li>
                 <li>• <strong>Penalidade:</strong> Reinício automático se a meta não for atingida.</li>
             </ul>
+
             <div class="treino-prompt">Vamos Começar?</div>
+
             <div style="display: flex; gap: 12px; justify-content: flex-end;">
                 <button class="btn-reset" onclick="confirmTreino(false)">Não (Multiplayer)</button>
                 <button class="btn-success-treino" onclick="confirmTreino(true)">Sim, Iniciar</button>
@@ -869,6 +876,7 @@
         </div>
     </div>
 
+    <!-- Modal de Alerta de Casa Bônus / Ônus (Multiplayer) -->
     <div class="modal" id="house-notice-modal">
         <div class="modal-content" style="text-align: center;">
             <h2 id="house-notice-title" style="margin-bottom: 15px;">Aviso da Casa</h2>
@@ -877,21 +885,26 @@
         </div>
     </div>
 
+    <!-- Modal de Diagnóstico de Erros (Treino) -->
     <div class="modal" id="diagnostic-modal">
         <div class="modal-content treino-card">
             <div class="treino-title" style="color: var(--danger-color);">Rendimento Insuficiente (&lt; 75%)</div>
             <p>Você atingiu a última casa, mas não alcançou a taxa mínima de 75% de acertos. Confira seu desempenho por área:</p>
+            
             <div class="diagnostic-card" id="diagnostic-details"></div>
+
             <div style="margin-top: 20px; text-align: right;">
                 <button class="btn-reset" onclick="closeDiagnosticAndReset()">Tentar Novamente</button>
             </div>
         </div>
     </div>
 
+    <!-- Modal do Material de Estudos -->
     <div class="modal" id="study-modal">
         <div class="modal-content study-modal-content">
             <button class="btn-close-study" onclick="closeStudyModal()">✕ Fechar</button>
             <h2>📚 Guia Prático de Estudos: Fabricação Mecânica &amp; CNC</h2>
+
             <div class="study-card">
                 <h3>1. Parâmetros de Corte e Usinagem</h3>
                 <p>Cálculos fundamentais de usinagem:</p>
@@ -901,6 +914,7 @@
                     <li><strong>Rugosidade Teórica ($R_a$):</strong> $R_a \approx f^2 / (32 \times r_\varepsilon)$.</li>
                 </ul>
             </div>
+
             <div class="study-card">
                 <h3>2. Programação CNC (Norma ISO)</h3>
                 <p>Códigos e funções normalizadas:</p>
@@ -909,6 +923,7 @@
                     <li><strong>Funções M:</strong> M03 (Liga Spindle CW), M05 (Parada Spindle), M08 (Liga Refrigeração), M30 (Fim de Programa).</li>
                 </ul>
             </div>
+
             <div class="study-card">
                 <h3>3. Metrologia e GD&amp;T</h3>
                 <p>Instrumentação e Tolerâncias Geométricas:</p>
@@ -920,6 +935,7 @@
         </div>
     </div>
 
+    <!-- Modal de Perguntas -->
     <div class="modal" id="question-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -942,6 +958,7 @@
         </div>
     </div>
 
+    <!-- Modal de Fim de Jogo -->
     <div class="modal" id="win-modal">
         <div class="modal-content win-modal-content">
             <h2>🏆 Fim da Partida! 🏆</h2>
@@ -958,10 +975,15 @@
         });
 
         const playerColors = [
-            "#f85149", "#1f6feb", "#238636",
-            "#d29922", "#a371f7", "#f0883e"
+            "#f85149",
+            "#1f6feb",
+            "#238636",
+            "#d29922",
+            "#a371f7",
+            "#f0883e"
         ];
 
+        /* MENSAGENS DE BOAS PRÁTICAS (BÔNUS) E ERROS (ÔNUS) */
         const bonusMessages = [
             "Manutenção Preditiva e Preventiva: Monitorar o estado dos equipamentos antecipa falhas e evita paradas.",
             "Padronização de Processos (SOPs): Documentar e treinar a equipe garante repetibilidade e qualidade.",
@@ -1018,7 +1040,9 @@
                     clearInterval(splashInterval);
                     splashScreen.style.opacity = '0';
                     splashScreen.style.visibility = 'hidden';
-                    setTimeout(() => { splashScreen.style.display = 'none'; }, 800);
+                    setTimeout(() => {
+                        splashScreen.style.display = 'none';
+                    }, 800);
                 }
             }, intervalTime);
         }
@@ -1047,6 +1071,7 @@
         const BONUS_VALUE = 2;
         const PENALTY_VALUE = 3;
 
+        /* BANCO DE QUESTÕES DE FABRICAÇÃO MECÂNICA E CNC */
         const questionsDatabase = [
             { id: 1, difficulty: "Fácil", topic: "Ferramentas ISO", question: "Na classificação ISO de ferramentas de usinagem, qual cor padrão e letra identificam o grupo de materiais P (Aços em geral)?", options: ["Azul (P)", "Amarelo (M)", "Vermelho (K)", "Verde (N)"], answer: 0, explanation: "Pela norma ISO, a letra P e a cor azul identificam o grupo dos aços carbono e aços liga." },
             { id: 2, difficulty: "Fácil", topic: "Gestão da Qualidade", question: "No ciclo PDCA aplicável à melhoria contínua dos processos de fabricação, o que representa a etapa 'D'?", options: ["Develop (Desenvolver)", "Do (Executar / Fazer)", "Direct (Direcionar)", "Design (Projetar)"], answer: 1, explanation: "A sigla PDCA significa Plan (Planear), Do (Executar/Fazer), Check (Checar) e Act (Agir)." },
@@ -1073,7 +1098,7 @@
             { id: 23, difficulty: "Fácil", topic: "Conformação", question: "As matrizes de forjamento a quente sofrem intenso desgaste severo decorrente de quais solicitações combinadas?", options: ["Pressões elevadas, choque térmico e abrasão", "Baixas pressões e corrosão por água", "Tração pura e cavitação", "Ruptura dielétrica"], answer: 0, explanation: "No forjamento a quente, as matrizes suportam grandes esforços mecânicos sob variação severa de temperatura e atrito." },
             { id: 24, difficulty: "Fácil", topic: "Gestão da Produção", question: "Qual dos fatores abaixo NÃO causa perda de produtividade em um centro de usinagem CNC?", options: ["Setup demorado de ferramentas", "Execução de manutenção preventiva em períodos programados", "Quebra não planejada de insertos", "Falta de matéria-prima no posto de trabalho"], answer: 1, explanation: "A manutenção preventiva programada visa evitar falhas catastróficas, otimizando a disponibilidade global." },
             { id: 25, difficulty: "Fácil", topic: "Metrologia", question: "Converta a medida nominal de 1/2 polegada para milímetros:", options: ["6,35 mm", "12,70 mm", "19,05 mm", "25,40 mm"], answer: 1, explanation: "Como 1 polegada = 25,4 mm, meia polegada equivale a 25,4 / 2 = 12,70 mm." },
-            { id: 26, difficulty: "Médio", topic: "Usinagem de Eixos", question: "Ao usinar um eixo longo de pequeno diâmetro no torno, qual elemento auxiliar é indispensável para evitar a deflexão (envergadura) por força de corte?", options: ["Placa universal de 3 castanhas", "Luneta (fixa ou móvel)", "Contraponto cônico simples", "Castanha mole"], answer: 1, explanation: "A luneta apoia a peça ao longo do comprimento, impedindo flexão por ação da ferramenta de corte." },
+            { id: 26, difficulty: "Médio", topic: "Usinagem de Eixos", question: "Ao usinar um eixo longo de pequeno diâmetro no torno, qual elemento auxiliar é indispensável para evitar a deflexão (envergadura) por força de corte?", options: ["Placa universal de 3 castanhas", "Luneta (fixa ou móvel)", "Contraponto cônico simples", "Castanha mole"], answer: 1, explanation: "A luneta apoia a peça ao longo do comprimento, impedimpedindo flexão por ação da ferramenta de corte." },
             { id: 27, difficulty: "Fácil", topic: "Programação CNC", question: "No bloco CNC 'G01 X50.0 Z-20.0 F0.15', o parâmetro F0.15 especifica:", options: ["A rotação da ferramenta", "O valor do avanço de usinagem (0,15 mm/rot ou mm/min)", "A profundidade do passe", "O raio da ferramenta"], answer: 1, explanation: "A letra F (Feedrate) especifica o avanço de corte programado para o deslocamento." },
             { id: 28, difficulty: "Médio", topic: "Metrologia", question: "Para medir o diâmetro interno de um furo rebaixado com tolerância H7 (alta precisão), qual instrumento é o mais indicado?", options: ["Paquímetro com escala vernier de 0,05 mm", "Micrômetro interno de três pontas (Imicro)", "Régua graduada de aço", "Suta ajustável"], answer: 1, explanation: "O micrômetro interno de três contatos oferece a precisão necessária para furos com tolerância estreita H7." },
             { id: 29, difficulty: "Fácil", topic: "Metrologia / GD&T", question: "A tolerância geométrica de Paralelismo exige que uma superfície esteja contida entre dois planos paralelos a uma superfície de:", options: ["Forma livre", "Referência (Datum)", "Simetria radial", "Massa concentrada"], answer: 1, explanation: "Tolerâncias de orientação (paralelismo, perpendicularidade, inclinação) requerem obrigatoriamente um elemento de referência (Datum)." },
@@ -1116,19 +1141,6 @@
         let hostConnection = null;
         let isHost = false;
         let myPlayerIndex = 0;
-
-        /* CONFIGURAÇÃO COMPATÍVEL COM GITHUB PAGES (STUN/TURN SERVERLESS) */
-        const peerConfig = {
-            config: {
-                iceServers: [
-                    { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:stun1.l.google.com:19302' },
-                    { urls: 'stun:stun2.l.google.com:19302' },
-                    { urls: 'stun:openrelay.metered.ca:80' }
-                ]
-            },
-            debug: 1
-        };
 
         function shuffleArray(array) {
             let currentIndex = array.length, randomIndex;
@@ -1193,12 +1205,8 @@
         document.getElementById('my-name-input').addEventListener('change', updateMyName);
 
         function createRoom() {
-            if (peer) peer.destroy();
-
             const roomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
-            document.getElementById('connection-status').innerText = 'Conectando Servidor...';
-
-            peer = new Peer(`CNC-${roomCode}`, peerConfig);
+            peer = new Peer(`CNC-${roomCode}`);
 
             peer.on('open', (id) => {
                 isHost = true;
@@ -1206,13 +1214,13 @@
                 document.getElementById('connection-status').innerText = 'Servidor (Host)';
                 document.getElementById('room-code-display').innerText = `Código da Sala: ${roomCode}`;
                 updateMyName();
-                alert(`Sala criada com sucesso! Compartilhe o código da sala: ${roomCode}`);
+                alert(`Sala criada! Compartilhe o código da sala: ${roomCode}`);
             });
 
             peer.on('connection', (conn) => {
                 if (connections.length >= 5) {
                     conn.send({ type: 'ERROR', message: 'Sala cheia (máximo 6 jogadores).' });
-                    setTimeout(() => conn.close(), 500);
+                    conn.close();
                     return;
                 }
 
@@ -1241,16 +1249,7 @@
             });
 
             peer.on('error', (err) => {
-                document.getElementById('connection-status').innerText = 'Erro de Conexão';
-                if (err.type === 'unavailable-id') {
-                    alert('Código de sala em uso. Tente criar a sala novamente.');
-                } else {
-                    alert('Erro na conexão multiplayer: ' + err.type);
-                }
-            });
-
-            peer.on('disconnected', () => {
-                peer.reconnect();
+                alert('Erro na conexão de rede: ' + err.type);
             });
         }
 
@@ -1261,13 +1260,10 @@
                 return;
             }
 
-            if (peer) peer.destroy();
-            document.getElementById('connection-status').innerText = 'Conectando à Sala...';
-
-            peer = new Peer(peerConfig);
+            peer = new Peer();
 
             peer.on('open', () => {
-                hostConnection = peer.connect(`CNC-${code}`, { reliable: true });
+                hostConnection = peer.connect(`CNC-${code}`);
 
                 hostConnection.on('open', () => {
                     isHost = false;
@@ -1281,22 +1277,12 @@
                 });
 
                 hostConnection.on('close', () => {
-                    document.getElementById('connection-status').innerText = 'Desconectado';
-                    alert('A conexão com a sala Host foi encerrada.');
-                });
-
-                hostConnection.on('error', (err) => {
-                    alert('Erro na transmissão P2P: ' + err);
+                    alert('Conexão com o Host foi encerrada.');
                 });
             });
 
             peer.on('error', (err) => {
-                document.getElementById('connection-status').innerText = 'Erro de Conexão';
-                alert('Não foi possível conectar ao Host. Verifique o código digitado.');
-            });
-
-            peer.on('disconnected', () => {
-                peer.reconnect();
+                alert('Não foi possível conectar à sala. Verifique o código digitado.');
             });
         }
 
@@ -1319,9 +1305,7 @@
                 penaltyTiles
             };
 
-            connections.forEach(conn => {
-                if (conn.open) conn.send(state);
-            });
+            connections.forEach(conn => conn.send(state));
             syncUI();
         }
 
@@ -1378,8 +1362,6 @@
                 document.getElementById('question-modal').style.display = 'none';
             } else if (data.type === 'SHOW_WIN') {
                 showWinModalUI();
-            } else if (data.type === 'ERROR') {
-                alert(data.message);
             }
         }
 
@@ -1643,9 +1625,11 @@
             if (isHost) broadcastGameState();
             else syncUI();
 
+            // Pausa de 4 segundos antes de avançar a lógica do jogo
             setTimeout(() => {
                 const currentPos = playerPositions[currentPlayer];
                 
+                // Se for multiplayer e o jogador estiver parado em uma casa de Bônus ou Ônus
                 if (numPlayers > 1 && bonusTiles.includes(currentPos)) {
                     showHouseNotice('bonus');
                 } else if (numPlayers > 1 && penaltyTiles.includes(currentPos)) {
@@ -1728,9 +1712,7 @@
             };
 
             if (isHost) {
-                connections.forEach(conn => {
-                    if (conn.open) conn.send({ type: 'SHOW_QUESTION', question: currentQuestion });
-                });
+                connections.forEach(conn => conn.send({ type: 'SHOW_QUESTION', question: currentQuestion }));
             }
 
             renderQuestionModal(currentQuestion);
@@ -1795,9 +1777,7 @@
                     timerEl.innerText = `⏱️ ${timeRemaining}s`;
 
                     if (isHost) {
-                        connections.forEach(conn => {
-                            if (conn.open) conn.send({ type: 'TIMER_TICK', timeRemaining });
-                        });
+                        connections.forEach(conn => conn.send({ type: 'TIMER_TICK', timeRemaining }));
                     }
 
                     if (timeRemaining <= 0) {
@@ -1821,9 +1801,7 @@
             const msg = '❌ Tempo esgotado! Você permanece na mesma casa.';
             
             if (isHost) {
-                connections.forEach(conn => {
-                    if (conn.open) conn.send({ type: 'ANSWER_RESULT', isCorrect: false, msg: msg });
-                });
+                connections.forEach(conn => conn.send({ type: 'ANSWER_RESULT', isCorrect: false, msg: msg }));
             }
 
             const feedback = document.getElementById('feedback-msg');
@@ -1933,9 +1911,7 @@
             showExplanation();
 
             if (isHost) {
-                connections.forEach(conn => {
-                    if (conn.open) conn.send({ type: 'ANSWER_RESULT', isCorrect, msg });
-                });
+                connections.forEach(conn => conn.send({ type: 'ANSWER_RESULT', isCorrect, msg }));
             }
 
             if (autoCloseTimeout) clearTimeout(autoCloseTimeout);
@@ -1986,18 +1962,14 @@
             if (autoCloseTimeout) clearTimeout(autoCloseTimeout);
             document.getElementById('question-modal').style.display = 'none';
             if (isHost) {
-                connections.forEach(conn => {
-                    if (conn.open) conn.send({ type: 'CLOSE_QUESTION' });
-                });
+                connections.forEach(conn => conn.send({ type: 'CLOSE_QUESTION' }));
             }
             advanceToNextActivePlayer();
         }
 
         function showWinModal() {
             if (isHost) {
-                connections.forEach(conn => {
-                    if (conn.open) conn.send({ type: 'SHOW_WIN' });
-                });
+                connections.forEach(conn => conn.send({ type: 'SHOW_WIN' }));
             }
             showWinModalUI();
         }
