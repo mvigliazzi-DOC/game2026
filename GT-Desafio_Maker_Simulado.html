@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Desafio Maker: Do CAD/CAM ao Chão de Fábrica</title>
-    <!-- PeerJS Library para Conexão P2P via WebRTC -->
+    <!-- PeerJS Library para Conexão P2P via WebRTC via HTTPS -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root {
@@ -909,9 +909,9 @@
                 <h3>1. Parâmetros de Corte e Usinagem</h3>
                 <p>Cálculos fundamentais de usinagem:</p>
                 <ul>
-                    <li><strong>Rotação ($N$):</strong> $N = (V_c \times 1000) / (\pi \times D)$.</li>
-                    <li><strong>Avanço de Mesa ($V_f$):</strong> $V_f = f_z \times Z \times N$.</li>
-                    <li><strong>Rugosidade Teórica ($R_a$):</strong> $R_a \approx f^2 / (32 \times r_\varepsilon)$.</li>
+                    <li><strong>Rotação (N):</strong> N = (Vc × 1000) / (π × D).</li>
+                    <li><strong>Avanço de Mesa (Vf):</strong> Vf = fz × Z × N.</li>
+                    <li><strong>Rugosidade Teórica (Ra):</strong> Ra ≈ f² / (32 × rε).</li>
                 </ul>
             </div>
 
@@ -973,6 +973,20 @@
             event.preventDefault();
             event.returnValue = '';
         });
+
+        // Configuração Global do WebRTC com Servidores STUN públicos do Google para funcionar entre redes distintas
+        const peerConfig = {
+            config: {
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' },
+                    { urls: 'stun:stun2.l.google.com:19302' },
+                    { urls: 'stun:stun3.l.google.com:19302' },
+                    { urls: 'stun:stun4.l.google.com:19302' }
+                ]
+            },
+            debug: 1
+        };
 
         const playerColors = [
             "#f85149",
@@ -1098,7 +1112,7 @@
             { id: 23, difficulty: "Fácil", topic: "Conformação", question: "As matrizes de forjamento a quente sofrem intenso desgaste severo decorrente de quais solicitações combinadas?", options: ["Pressões elevadas, choque térmico e abrasão", "Baixas pressões e corrosão por água", "Tração pura e cavitação", "Ruptura dielétrica"], answer: 0, explanation: "No forjamento a quente, as matrizes suportam grandes esforços mecânicos sob variação severa de temperatura e atrito." },
             { id: 24, difficulty: "Fácil", topic: "Gestão da Produção", question: "Qual dos fatores abaixo NÃO causa perda de produtividade em um centro de usinagem CNC?", options: ["Setup demorado de ferramentas", "Execução de manutenção preventiva em períodos programados", "Quebra não planejada de insertos", "Falta de matéria-prima no posto de trabalho"], answer: 1, explanation: "A manutenção preventiva programada visa evitar falhas catastróficas, otimizando a disponibilidade global." },
             { id: 25, difficulty: "Fácil", topic: "Metrologia", question: "Converta a medida nominal de 1/2 polegada para milímetros:", options: ["6,35 mm", "12,70 mm", "19,05 mm", "25,40 mm"], answer: 1, explanation: "Como 1 polegada = 25,4 mm, meia polegada equivale a 25,4 / 2 = 12,70 mm." },
-            { id: 26, difficulty: "Médio", topic: "Usinagem de Eixos", question: "Ao usinar um eixo longo de pequeno diâmetro no torno, qual elemento auxiliar é indispensável para evitar a deflexão (envergadura) por força de corte?", options: ["Placa universal de 3 castanhas", "Luneta (fixa ou móvel)", "Contraponto cônico simples", "Castanha mole"], answer: 1, explanation: "A luneta apoia a peça ao longo do comprimento, impedimpedindo flexão por ação da ferramenta de corte." },
+            { id: 26, difficulty: "Médio", topic: "Usinagem de Eixos", question: "Ao usinar um eixo longo de pequeno diâmetro no torno, qual elemento auxiliar é indispensável para evitar a deflexão (envergadura) por força de corte?", options: ["Placa universal de 3 castanhas", "Luneta (fixa ou móvel)", "Contraponto cônico simples", "Castanha mole"], answer: 1, explanation: "A luneta apoia a peça ao longo do comprimento, impedindo flexão por ação da ferramenta de corte." },
             { id: 27, difficulty: "Fácil", topic: "Programação CNC", question: "No bloco CNC 'G01 X50.0 Z-20.0 F0.15', o parâmetro F0.15 especifica:", options: ["A rotação da ferramenta", "O valor do avanço de usinagem (0,15 mm/rot ou mm/min)", "A profundidade do passe", "O raio da ferramenta"], answer: 1, explanation: "A letra F (Feedrate) especifica o avanço de corte programado para o deslocamento." },
             { id: 28, difficulty: "Médio", topic: "Metrologia", question: "Para medir o diâmetro interno de um furo rebaixado com tolerância H7 (alta precisão), qual instrumento é o mais indicado?", options: ["Paquímetro com escala vernier de 0,05 mm", "Micrômetro interno de três pontas (Imicro)", "Régua graduada de aço", "Suta ajustável"], answer: 1, explanation: "O micrômetro interno de três contatos oferece a precisão necessária para furos com tolerância estreita H7." },
             { id: 29, difficulty: "Fácil", topic: "Metrologia / GD&T", question: "A tolerância geométrica de Paralelismo exige que uma superfície esteja contida entre dois planos paralelos a uma superfície de:", options: ["Forma livre", "Referência (Datum)", "Simetria radial", "Massa concentrada"], answer: 1, explanation: "Tolerâncias de orientação (paralelismo, perpendicularidade, inclinação) requerem obrigatoriamente um elemento de referência (Datum)." },
@@ -1206,7 +1220,9 @@
 
         function createRoom() {
             const roomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
-            peer = new Peer(`CNC-${roomCode}`);
+            
+            // Passando peerConfig com servidores STUN
+            peer = new Peer(`CNC-${roomCode}`, peerConfig);
 
             peer.on('open', (id) => {
                 isHost = true;
@@ -1220,7 +1236,7 @@
             peer.on('connection', (conn) => {
                 if (connections.length >= 5) {
                     conn.send({ type: 'ERROR', message: 'Sala cheia (máximo 6 jogadores).' });
-                    conn.close();
+                    setTimeout(() => conn.close(), 500);
                     return;
                 }
 
@@ -1246,10 +1262,14 @@
                         broadcastGameState();
                     }
                 });
+
+                conn.on('error', (err) => {
+                    console.error("Erro na conexão com cliente:", err);
+                });
             });
 
             peer.on('error', (err) => {
-                alert('Erro na conexão de rede: ' + err.type);
+                alert('Erro na conexão de rede: ' + err.type + '. Tente novamente.');
             });
         }
 
@@ -1260,10 +1280,11 @@
                 return;
             }
 
-            peer = new Peer();
+            // Passando peerConfig com servidores STUN
+            peer = new Peer(peerConfig);
 
             peer.on('open', () => {
-                hostConnection = peer.connect(`CNC-${code}`);
+                hostConnection = peer.connect(`CNC-${code}`, { reliable: true });
 
                 hostConnection.on('open', () => {
                     isHost = false;
@@ -1279,10 +1300,14 @@
                 hostConnection.on('close', () => {
                     alert('Conexão com o Host foi encerrada.');
                 });
+
+                hostConnection.on('error', (err) => {
+                    alert('Erro na conexão com o Host: ' + err);
+                });
             });
 
             peer.on('error', (err) => {
-                alert('Não foi possível conectar à sala. Verifique o código digitado.');
+                alert('Não foi possível conectar à rede PeerJS. Verifique o código e tente novamente.');
             });
         }
 
@@ -1625,11 +1650,9 @@
             if (isHost) broadcastGameState();
             else syncUI();
 
-            // Pausa de 4 segundos antes de avançar a lógica do jogo
             setTimeout(() => {
                 const currentPos = playerPositions[currentPlayer];
                 
-                // Se for multiplayer e o jogador estiver parado em uma casa de Bônus ou Ônus
                 if (numPlayers > 1 && bonusTiles.includes(currentPos)) {
                     showHouseNotice('bonus');
                 } else if (numPlayers > 1 && penaltyTiles.includes(currentPos)) {
