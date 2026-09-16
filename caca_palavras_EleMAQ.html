@@ -13,6 +13,33 @@ h1{margin:0;font-size:24px}
 main{max-width:1050px;margin:auto;padding:20px}
 .box{background:white;border-radius:16px;padding:20px;box-shadow:0 5px 20px #00286418}
 h2{color:#0046ad;margin-top:0}
+
+/* Tela do Jogador */
+.player-setup{background:#f5f8fd;border-radius:14px;padding:20px;margin-bottom:20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.player-setup label{font-weight:bold;color:#0046ad}
+#player-name{flex:1;min-width:200px;border:2px solid #cbd9ed;border-radius:9px;padding:11px;font-size:16px}
+
+/* Barra de Estatísticas */
+.stats-bar{display:flex;gap:15px;flex-wrap:wrap;align-items:center;font-size:14px;background:#e8f1ff;padding:12px 18px;border-radius:12px;margin-bottom:15px}
+.stats-item{font-weight:bold;color:#17345e}
+.stats-item span{color:#0046ad}
+
+/* Campo em Destaque do Percentual (Header) */
+.accuracy-badge{
+  margin-left:auto;
+  background:linear-gradient(135deg, #0046ad, #075ed7);
+  color:#fff;
+  padding:8px 16px;
+  border-radius:20px;
+  font-weight:900;
+  font-size:15px;
+  box-shadow:0 4px 10px rgba(7, 94, 215, 0.25);
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.accuracy-badge span{color:#fff !important;font-size:18px}
+
 .question-box{background:#f5f8fd;border-radius:14px;padding:16px;margin:16px 0}
 .question-number{font-size:13px;font-weight:900;color:#0046ad;text-transform:uppercase;margin-bottom:7px}
 .question{font-size:18px;font-weight:800;line-height:1.35;margin-bottom:13px}
@@ -34,10 +61,41 @@ h2{color:#0046ad;margin-top:0}
 .word.released{background:#e8f1ff;color:#0046ad}
 .word.done{background:#dff3e5;color:#267344;text-decoration:line-through}
 .tip{font-size:13px;color:#53627a;margin-top:10px}
-#finish{display:none;background:#0046ad;color:#fff;border-radius:14px;text-align:center;padding:18px;margin-top:18px;font-size:22px;font-weight:bold}
+
+/* Modal / Tela de Resultados Final */
+#finish{display:none;background:#f5f8fd;border:3px solid #0046ad;border-radius:14px;text-align:center;padding:25px;margin-top:18px}
 #finish.show{display:block}
+#finish h3{color:#0046ad;font-size:26px;margin-top:0}
+.score-card{background:#fff;border-radius:12px;padding:20px;max-width:420px;margin:15px auto;box-shadow:0 5px 15px rgba(0,0,0,0.08);text-align:left}
+.score-card div{margin-bottom:10px;font-size:16px}
+
+/* Destaque do Percentual Final */
+.final-accuracy-box{
+  background:#eef5ff;
+  border:2px dashed #0046ad;
+  border-radius:10px;
+  padding:15px;
+  text-align:center;
+  margin-top:15px;
+}
+.final-accuracy-box label{
+  display:block;
+  font-size:13px;
+  font-weight:bold;
+  color:#53627a;
+  text-transform:uppercase;
+}
+.final-accuracy-box span{
+  font-size:36px;
+  font-weight:900;
+  color:#0046ad;
+}
+
 @media(max-width:800px){.layout{grid-template-columns:1fr}}
-@media(max-width:500px){main{padding:10px}.box{padding:13px}.grid{gap:2px;padding:5px}.words{grid-template-columns:1fr 1fr}h1{font-size:19px}}
+@media(max-width:500px){
+  main{padding:10px}.box{padding:13px}.grid{gap:2px;padding:5px}.words{grid-template-columns:1fr 1fr}h1{font-size:19px}
+  .accuracy-badge{margin-left:0;width:100%;justify-content:center}
+}
 </style>
 </head>
 <body>
@@ -47,11 +105,27 @@ h2{color:#0046ad;margin-top:0}
 </header>
 <main>
   <div class="box">
-    <div class="controls" style="margin-top:0;margin-bottom:18px">
+    <!-- Registro do Jogador -->
+    <div class="player-setup">
+      <label for="player-name">Nome do Jogador:</label>
+      <input type="text" id="player-name" placeholder="Digite seu nome completo...">
       <button id="start">Iniciar atividade</button>
-      <strong>Palavras encontradas: <span id="count">0</span> / 20</strong>
     </div>
-    <div id="status" style="text-align:center;color:#0046ad;font-weight:bold;min-height:24px">Clique em “Iniciar atividade” para começar.</div>
+
+    <!-- Estatísticas em Tempo Real -->
+    <div class="stats-bar">
+      <div class="stats-item">Jogador: <span id="lbl-player">---</span></div>
+      <div class="stats-item">Acertos: <span id="lbl-rights">0</span></div>
+      <div class="stats-item">Erros: <span id="lbl-wrongs">0</span></div>
+      <div class="stats-item">Palavras: <span id="count">0</span> / 20</div>
+      
+      <!-- CAMPO EM DESTAQUE: PERCENTUAL DE ACERTO -->
+      <div class="accuracy-badge">
+        🎯 Aproveitamento: <span id="lbl-accuracy">0%</span>
+      </div>
+    </div>
+
+    <div id="status" style="text-align:center;color:#0046ad;font-weight:bold;min-height:24px">Digite seu nome e clique em “Iniciar atividade” para começar.</div>
 
     <h2>Desafio: descubra as palavras</h2>
     <p>Responda às perguntas sobre elementos de máquinas e descubra as palavras para encontrar no caça-palavras.</p>
@@ -60,8 +134,8 @@ h2{color:#0046ad;margin-top:0}
       <div class="question-number">Pergunta <span id="qnum">1</span> de 20</div>
       <div id="question" class="question"></div>
       <div class="answer-row">
-        <input id="answer" type="text" autocomplete="off" placeholder="Digite sua resposta">
-        <button id="check" type="button">Verificar</button>
+        <input id="answer" type="text" autocomplete="off" placeholder="Digite sua resposta" disabled>
+        <button id="check" type="button" disabled>Verificar</button>
       </div>
       <div id="nextWrap" style="margin-top:10px;display:none">
         <button id="nextQuestion" type="button" style="border:0;border-radius:9px;padding:11px 17px;background:#267344;color:#fff;font-weight:800;cursor:pointer">Próxima pergunta</button>
@@ -80,7 +154,22 @@ h2{color:#0046ad;margin-top:0}
       </div>
     </div>
     
-    <div id="finish">Parabéns, você concluiu a atividade!</div>
+    <!-- Tela de Encerramento -->
+    <div id="finish">
+      <h3>Parabéns, você concluiu a atividade!</h3>
+      <div class="score-card">
+        <div><strong>Jogador:</strong> <span id="res-name"></span></div>
+        <div><strong>Perguntas Respondidas:</strong> 20</div>
+        <div><strong>Respostas Certas:</strong> <span id="res-rights" style="color:#267344"></span></div>
+        <div><strong>Tentativas Incorretas:</strong> <span id="res-wrongs" style="color:#b3261e"></span></div>
+        
+        <!-- CAMPO EM DESTAQUE FINAL -->
+        <div class="final-accuracy-box">
+          <label>Aproveitamento Geral</label>
+          <span id="res-pct">0%</span>
+        </div>
+      </div>
+    </div>
   </div>
 </main>
 
@@ -117,6 +206,11 @@ const DIRS = [[0,1],[1,0],[0,-1],[-1,0],[1,1],[-1,-1],[1,-1],[-1,1]];
 
 let board = [], first = null, found = {}, released = {}, current = 0, playing = false, waiting = false;
 
+// Variáveis da Pontuação
+let playerName = "";
+let correctAnswers = 0;
+let wrongAnswers = 0;
+
 const grid = document.getElementById("grid");
 const wordsBox = document.getElementById("words");
 const count = document.getElementById("count");
@@ -131,6 +225,12 @@ const feedback = document.getElementById("feedback");
 const nextWrap = document.getElementById("nextWrap");
 const nextButton = document.getElementById("nextQuestion");
 
+const inputPlayerName = document.getElementById("player-name");
+const lblPlayer = document.getElementById("lbl-player");
+const lblRights = document.getElementById("lbl-rights");
+const lblWrongs = document.getElementById("lbl-wrongs");
+const lblAccuracy = document.getElementById("lbl-accuracy");
+
 function normalize(s){
   return String(s).toUpperCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^A-Z0-9]/g,"");
 }
@@ -144,6 +244,12 @@ function shuffle(a){
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
+}
+
+function updateAccuracy(){
+  let totalAttempts = correctAnswers + wrongAnswers;
+  let pct = totalAttempts > 0 ? ((correctAnswers / totalAttempts) * 100).toFixed(1) : "0.0";
+  lblAccuracy.textContent = pct + "%";
 }
 
 function canPlace(w, r, c, dr, dc){
@@ -275,14 +381,27 @@ function selectCell(cell){
   item.classList.add("done");
   count.textContent = Object.keys(found).length;
   status.textContent = "Palavra encontrada: " + word + "!";
+
   if(Object.keys(found).length === WORDS.length){
     playing = false;
-    finish.classList.add("show");
-    status.textContent = "";
-    answer.disabled = true;
-    check.disabled = true;
-    nextWrap.style.display = "none";
+    showFinalReport();
   }
+}
+
+function showFinalReport(){
+  document.getElementById("res-name").textContent = playerName;
+  document.getElementById("res-rights").textContent = correctAnswers;
+  document.getElementById("res-wrongs").textContent = wrongAnswers;
+  
+  let totalAttempts = correctAnswers + wrongAnswers;
+  let pct = totalAttempts > 0 ? ((correctAnswers / totalAttempts) * 100).toFixed(1) : "0.0";
+  document.getElementById("res-pct").textContent = pct + "%";
+
+  finish.classList.add("show");
+  status.textContent = "";
+  answer.disabled = true;
+  check.disabled = true;
+  nextWrap.style.display = "none";
 }
 
 function showQuestion(){
@@ -304,11 +423,19 @@ function verify(){
   let correctDisplay = QUESTIONS[current][1];
   
   if(typed !== correctNorm){
+    wrongAnswers++;
+    lblWrongs.textContent = wrongAnswers;
+    updateAccuracy();
     feedback.textContent = "Resposta incorreta. Tente novamente.";
     feedback.className = "feedback no";
     answer.focus();
     return;
   }
+
+  correctAnswers++;
+  lblRights.textContent = correctAnswers;
+  updateAccuracy();
+  
   released[correctNorm] = true;
   const releasedItem = document.getElementById("w-" + correctNorm);
   if(releasedItem){
@@ -333,15 +460,30 @@ function nextQuestion(){
     status.textContent = "Responda à próxima pergunta.";
   } else {
     nextWrap.style.display = "none";
-    question.textContent = "Todas as palavras foram liberadas! Agora encontre todas elas no caça-palavras.";
+    question.textContent = "Todas as perguntas foram respondidas! Encontre as palavras restantes no caça-palavras para finalizar.";
     qnum.textContent = QUESTIONS.length;
     answer.disabled = true;
     check.disabled = true;
-    status.textContent = "Todas as palavras estão liberadas. Encontre-as no caça-palavras.";
+    status.textContent = "Todas as palavras foram liberadas! Complete o caça-palavras.";
   }
 }
 
 function startGame(){
+  let name = inputPlayerName.value.trim();
+  if(!name){
+    alert("Por favor, digite o nome do jogador antes de iniciar!");
+    inputPlayerName.focus();
+    return;
+  }
+  
+  playerName = name;
+  lblPlayer.textContent = playerName;
+  correctAnswers = 0;
+  wrongAnswers = 0;
+  lblRights.textContent = "0";
+  lblWrongs.textContent = "0";
+  updateAccuracy();
+
   found = {};
   released = {};
   current = 0;
@@ -351,6 +493,7 @@ function startGame(){
   count.textContent = "0";
   finish.classList.remove("show");
   nextWrap.style.display = "none";
+  
   buildBoard();
   renderGrid();
   renderWords();
@@ -372,7 +515,6 @@ answer.addEventListener("keydown", e => {
 buildBoard();
 renderGrid();
 renderWords();
-showQuestion();
 })();
 </script>
 </body>
