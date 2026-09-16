@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Caça-Palavras — Atuadores e Válvulas Pneumáticas</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#eef5ff;color:#17233c;font-family:Arial,sans-serif}
+header{background:#0046ad;color:white;padding:18px 22px;display:flex;gap:16px;align-items:center}
+.logo{background:#e30613;padding:5px 12px;font-weight:900;font-style:italic;font-size:24px}
+h1{margin:0;font-size:24px}
+main{max-width:1050px;margin:auto;padding:20px}
+.box{background:white;border-radius:16px;padding:20px;box-shadow:0 5px 20px #00286418}
+h2{color:#0046ad;margin-top:0}
+.question-box{background:#f5f8fd;border-radius:14px;padding:16px;margin:16px 0}
+.question-number{font-size:13px;font-weight:900;color:#0046ad;text-transform:uppercase;margin-bottom:7px}
+.question{font-size:18px;font-weight:800;line-height:1.35;margin-bottom:13px}
+.answer-row{display:flex;gap:8px}
+#answer{flex:1;border:2px solid #cbd9ed;border-radius:9px;padding:11px;font-size:16px}
+#check,#start{border:0;border-radius:9px;padding:11px 17px;background:#075ed7;color:#fff;font-weight:800;cursor:pointer}
+#check:disabled,#start:disabled{background:#a0bce8;cursor:not-allowed}
+.feedback{font-size:14px;font-weight:800;margin-top:9px;min-height:18px}
+.ok{color:#267344}
+.no{color:#b3261e}
+.controls{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:18px 0}
+.layout{display:grid;grid-template-columns:minmax(300px,650px) 1fr;gap:22px}
+.grid{display:grid;grid-template-columns:repeat(15,1fr);gap:3px;background:#d7e5f8;padding:7px;border-radius:12px}
+.cell{border:0;background:#fff;border-radius:5px;aspect-ratio:1;font-size:clamp(10px,2vw,20px);font-weight:bold;color:#17345e;cursor:pointer;padding:0}
+.cell.first{background:#8bbcff;color:#003d8f}
+.cell.found{background:#e30613;color:#fff}
+.words{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
+.word{background:#f1f5fa;border-radius:7px;padding:8px;font-size:12px;font-weight:bold}
+.word.released{background:#e8f1ff;color:#0046ad}
+.word.done{background:#dff3e5;color:#267344;text-decoration:line-through}
+.tip{font-size:13px;color:#53627a;margin-top:10px}
+#finish{display:none;background:#0046ad;color:#fff;border-radius:14px;text-align:center;padding:18px;margin-top:18px;font-size:22px;font-weight:bold}
+#finish.show{display:block}
+@media(max-width:800px){.layout{grid-template-columns:1fr}}
+@media(max-width:500px){main{padding:10px}.box{padding:13px}.grid{gap:2px;padding:5px}.words{grid-template-columns:1fr 1fr}h1{font-size:19px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">SENAI</div>
+  <h1>Caça-Palavras — Atuadores e Válvulas Pneumáticas</h1>
+</header>
+<main>
+  <div class="box">
+    <div class="controls" style="margin-top:0;margin-bottom:18px">
+      <button id="start">Iniciar atividade</button>
+      <strong>Palavras encontradas: <span id="count">0</span> / 15</strong>
+    </div>
+    <div id="status" style="text-align:center;color:#0046ad;font-weight:bold;min-height:24px">Clique em “Iniciar atividade” para começar.</div>
+
+    <h2>Desafio: descubra as palavras</h2>
+    <p>Responda às perguntas sobre atuadores e válvulas e descubra as palavras para encontrar no caça-palavras.</p>
+    
+    <div class="question-box">
+      <div class="question-number">Pergunta <span id="qnum">1</span> de 15</div>
+      <div id="question" class="question"></div>
+      <div class="answer-row">
+        <input id="answer" type="text" autocomplete="off" placeholder="Digite sua resposta">
+        <button id="check" type="button">Verificar</button>
+      </div>
+      <div id="nextWrap" style="margin-top:10px;display:none">
+        <button id="nextQuestion" type="button" style="border:0;border-radius:9px;padding:11px 17px;background:#267344;color:#fff;font-weight:800;cursor:pointer">Próxima pergunta</button>
+      </div>
+      <div id="feedback" class="feedback"></div>
+    </div>
+
+    <div class="layout">
+      <div>
+        <div id="grid" class="grid"></div>
+        <div class="tip">Depois de acertar a resposta, clique na primeira letra e depois na última letra. A palavra pode estar na horizontal, vertical ou diagonal.</div>
+      </div>
+      <div>
+        <strong>Respostas descobertas</strong>
+        <div id="words" class="words"></div>
+      </div>
+    </div>
+    
+    <div id="finish">Parabéns, você concluiu a atividade!</div>
+  </div>
+</main>
+
+<script>
+(function(){
+"use strict";
+
+const QUESTIONS = [
+  ["Qual tipo de cilindro realiza movimento linear em apenas um sentido com retorno por mola?", "SIMPLES ACAO"],
+  ["Qual cilindro utiliza ar comprimido tanto para o avanço quanto para o retorno?", "DUPLA ACAO"],
+  ["Qual elemento converte a energia do ar comprimido em movimento e força mecânica?", "ATUADOR"],
+  ["Dispositivo que controla o fluxo, a pressão ou a direção do ar comprimido em um circuito?", "VALVULA"],
+  ["Atuador pneumático que economiza espaço longitudinal por não possuir haste externa?", "SEM HASTE"],
+  ["Atuador pneumático ideal para movimentação e fixação em espaços reduzidos?", "COMPACTO"],
+  ["Atuador projetado para converter a energia do ar comprimido em movimento angular ou giro?", "ROTATIVO"],
+  ["Dispositivo pneumático utilizado para segurar, agarrar e manipular peças em automação?", "PINCA"],
+  ["Válvula direcional com 2 vias e 2 posições, usada para abrir ou fechar o fluxo de ar?", "VALVULA 2/2"],
+  ["Válvula muito usada para comandar atuadores de simples ação (3 vias e 2 posições)?", "VALVULA 3/2"],
+  ["Válvula direcional de 5 vias e 2 posições ideal para controlar cilindros de dupla ação?", "VALVULA 5/2"],
+  ["Qual válvula permite o fluxo de ar em apenas um sentido e bloqueia no sentido oposto?", "RETENCAO"],
+  ["Qual válvula é utilizada para controlar a vazão e ajustar a velocidade do atuador?", "FLUXO"],
+  ["Qual válvula permite a rápida descarga do ar para a atmosfera aumentando a velocidade do atuador?", "ESCAPE RAPIDO"],
+  ["Elemento interno de cilindros tradicionais que transmite a força do êmbolo para a carga?", "HASTE"]
+];
+
+const WORDS = QUESTIONS.map(q => q[1]);
+const SIZE = 15;
+const DIRS = [[0,1],[1,0],[0,-1],[-1,0],[1,1],[-1,-1],[1,-1],[-1,1]];
+
+let board = [], first = null, found = {}, released = {}, current = 0, playing = false, waiting = false;
+
+const grid = document.getElementById("grid");
+const wordsBox = document.getElementById("words");
+const count = document.getElementById("count");
+const status = document.getElementById("status");
+const finish = document.getElementById("finish");
+const start = document.getElementById("start");
+const question = document.getElementById("question");
+const qnum = document.getElementById("qnum");
+const answer = document.getElementById("answer");
+const check = document.getElementById("check");
+const feedback = document.getElementById("feedback");
+const nextWrap = document.getElementById("nextWrap");
+const nextButton = document.getElementById("nextQuestion");
+
+function normalize(s){
+  return String(s).toUpperCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^A-Z0-9]/g,"");
+}
+
+function inside(r,c){ return r>=0 && r<SIZE && c>=0 && c<SIZE; }
+
+function shuffle(a){
+  a = a.slice();
+  for(let i=a.length-1; i>0; i--){
+    let j = Math.floor(Math.random()*(i+1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function canPlace(w, r, c, dr, dc){
+  for(let i=0; i<w.length; i++){
+    let R = r + dr*i, C = c + dc*i;
+    if(!inside(R,C)) return false;
+    if(board[R][C] && board[R][C] !== w[i]) return false;
+  }
+  return true;
+}
+
+function place(w){
+  let wordNorm = normalize(w);
+  for(let t=0; t<2000; t++){
+    let d = DIRS[Math.floor(Math.random()*DIRS.length)],
+        r = Math.floor(Math.random()*SIZE),
+        c = Math.floor(Math.random()*SIZE);
+    if(canPlace(wordNorm, r, c, d[0], d[1])){
+      for(let i=0; i<wordNorm.length; i++){
+        board[r + d[0]*i][c + d[1]*i] = wordNorm[i];
+      }
+      return true;
+    }
+  }
+  return false;
+}
+
+function buildBoard(){
+  for(let attempt=0; attempt<100; attempt++){
+    board = Array.from({length:SIZE}, () => Array(SIZE).fill(""));
+    let ok = true;
+    let sortedWords = shuffle(WORDS).sort((a,b) => normalize(b).length - normalize(a).length);
+    for(const w of sortedWords){
+      if(!place(w)){ ok = false; break; }
+    }
+    if(ok){
+      for(let r=0; r<SIZE; r++){
+        for(let c=0; c<SIZE; c++){
+          if(!board[r][c]){
+            board[r][c] = String.fromCharCode(65 + Math.floor(Math.random()*26));
+          }
+        }
+      }
+      return;
+    }
+  }
+}
+
+function renderGrid(){
+  grid.innerHTML = "";
+  for(let r=0; r<SIZE; r++){
+    for(let c=0; c<SIZE; c++){
+      let b = document.createElement("button");
+      b.type = "button";
+      b.className = "cell";
+      b.textContent = board[r][c];
+      b.dataset.r = r;
+      b.dataset.c = c;
+      b.addEventListener("click", () => selectCell(b));
+      grid.appendChild(b);
+    }
+  }
+}
+
+function renderWords(){
+  wordsBox.innerHTML = "";
+  WORDS.forEach(w => {
+    let d = document.createElement("div");
+    d.className = "word";
+    d.id = "w-" + normalize(w);
+    d.textContent = "???";
+    wordsBox.appendChild(d);
+  });
+}
+
+function getCell(r,c){
+  return grid.querySelector('.cell[data-r="'+r+'"][data-c="'+c+'"]');
+}
+
+function clearFirst(){
+  if(first) first.classList.remove("first");
+  first = null;
+}
+
+function getLine(a,b){
+  let r1 = +a.dataset.r, c1 = +a.dataset.c,
+      r2 = +b.dataset.r, c2 = +b.dataset.c,
+      dr = Math.sign(r2-r1), dc = Math.sign(c2-c1);
+  if(r1!==r2 && c1!==c2 && Math.abs(r2-r1)!==Math.abs(c2-c1)) return null;
+  let n = Math.max(Math.abs(r2-r1), Math.abs(c2-c1)) + 1;
+  let A = [];
+  for(let i=0; i<n; i++) A.push(getCell(r1 + dr*i, c1 + dc*i));
+  return A;
+}
+
+function selectCell(cell){
+  if(!playing || waiting) return;
+  if(!first){
+    first = cell;
+    cell.classList.add("first");
+    status.textContent = "Agora clique na última letra da palavra.";
+    return;
+  }
+  if(cell === first){
+    clearFirst();
+    return;
+  }
+  let A = getLine(first, cell);
+  if(!A){
+    clearFirst();
+    first = cell;
+    cell.classList.add("first");
+    status.textContent = "Selecione uma linha, coluna ou diagonal válida.";
+    return;
+  }
+  let text = A.map(c => c.textContent).join("");
+  let rev = text.split("").reverse().join("");
+  let word = WORDS.find(w => released[normalize(w)] && !found[normalize(w)] && (normalize(w) === text || normalize(w) === rev));
+  clearFirst();
+  if(!word){
+    status.textContent = "Essa sequência não corresponde a uma palavra liberada.";
+    return;
+  }
+  let normW = normalize(word);
+  found[normW] = true;
+  A.forEach(c => c.classList.add("found"));
+  let item = document.getElementById("w-" + normW);
+  item.textContent = word;
+  item.classList.add("done");
+  count.textContent = Object.keys(found).length;
+  status.textContent = "Palavra encontrada: " + word + "!";
+  if(Object.keys(found).length === WORDS.length){
+    playing = false;
+    finish.classList.add("show");
+    status.textContent = "";
+    answer.disabled = true;
+    check.disabled = true;
+    nextWrap.style.display = "none";
+  }
+}
+
+function showQuestion(){
+  qnum.textContent = current + 1;
+  question.textContent = QUESTIONS[current][0];
+  answer.value = "";
+  answer.disabled = false;
+  check.disabled = false;
+  feedback.textContent = "";
+  feedback.className = "feedback";
+  nextWrap.style.display = "none";
+  setTimeout(() => answer.focus(), 50);
+}
+
+function verify(){
+  if(!playing || waiting) return;
+  let typed = normalize(answer.value);
+  let correctNorm = normalize(QUESTIONS[current][1]);
+  let correctDisplay = QUESTIONS[current][1];
+  
+  if(typed !== correctNorm){
+    feedback.textContent = "Resposta incorreta. Tente novamente.";
+    feedback.className = "feedback no";
+    answer.focus();
+    return;
+  }
+  released[correctNorm] = true;
+  const releasedItem = document.getElementById("w-" + correctNorm);
+  if(releasedItem){
+    releasedItem.textContent = correctDisplay;
+    releasedItem.classList.add("released");
+  }
+  feedback.textContent = "Resposta correta! A palavra foi liberada.";
+  feedback.className = "feedback ok";
+  status.textContent = "Agora procure no caça-palavras: " + correctDisplay;
+  answer.disabled = true;
+  check.disabled = true;
+  waiting = true;
+  nextWrap.style.display = "block";
+}
+
+function nextQuestion(){
+  if(!waiting) return;
+  waiting = false;
+  current++;
+  if(current < QUESTIONS.length){
+    showQuestion();
+    status.textContent = "Responda à próxima pergunta.";
+  } else {
+    nextWrap.style.display = "none";
+    question.textContent = "Todas as palavras foram liberadas! Agora encontre todas elas no caça-palavras.";
+    qnum.textContent = QUESTIONS.length;
+    answer.disabled = true;
+    check.disabled = true;
+    status.textContent = "Todas as palavras estão liberadas. Encontre-as no caça-palavras.";
+  }
+}
+
+function startGame(){
+  found = {};
+  released = {};
+  current = 0;
+  first = null;
+  playing = true;
+  waiting = false;
+  count.textContent = "0";
+  finish.classList.remove("show");
+  nextWrap.style.display = "none";
+  buildBoard();
+  renderGrid();
+  renderWords();
+  showQuestion();
+  status.textContent = "Responda à primeira pergunta.";
+  start.textContent = "Reiniciar atividade";
+}
+
+start.addEventListener("click", startGame);
+check.addEventListener("click", verify);
+nextButton.addEventListener("click", nextQuestion);
+answer.addEventListener("keydown", e => {
+  if(e.key === "Enter"){
+    e.preventDefault();
+    verify();
+  }
+});
+
+buildBoard();
+renderGrid();
+renderWords();
+showQuestion();
+})();
+</script>
+</body>
+</html>
