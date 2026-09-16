@@ -1,0 +1,784 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Caça-Palavras — Atuadores e Válvulas Pneumáticas</title>
+<style>
+  * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+  body { margin: 0; background-color: #f0f4f9; color: #1e293b; min-height: 100vh; display: flex; flex-direction: column; }
+  
+  header { background: #0f172a; color: white; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+  .logo-title { display: flex; align-items: center; gap: 14px; }
+  .logo { background: #e11d48; color: white; padding: 6px 14px; font-weight: 900; font-style: italic; font-size: 22px; border-radius: 6px; letter-spacing: 1px; }
+  h1 { margin: 0; font-size: 20px; font-weight: 700; color: #f8fafc; }
+
+  main { max-width: 1200px; width: 100%; margin: 20px auto; padding: 0 16px; flex: 1; }
+  .card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); margin-bottom: 20px; }
+
+  /* Controls & Mode Selection */
+  .controls-bar { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
+  .field-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  label { font-weight: 600; font-size: 14px; color: #334155; }
+  input[type="text"], select { padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; background: white; transition: border 0.2s; }
+  input[type="text"]:focus, select:focus { border-color: #2563eb; ring: 2px #2563eb; }
+
+  .btn { border: none; border-radius: 8px; padding: 10px 18px; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-primary { background: #2563eb; color: white; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-warning { background: #f59e0b; color: white; }
+  .btn-warning:hover { background: #d97706; }
+  .btn-success { background: #10b981; color: white; }
+  .btn-success:hover { background: #059669; }
+  .btn:disabled { background: #94a3b8 !important; cursor: not-allowed; opacity: 0.7; }
+
+  /* Stats Dashboard */
+  .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .dash-card { background: #f8fafc; padding: 12px 16px; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center; }
+  .dash-card .val { font-size: 24px; font-weight: 800; color: #0f172a; }
+  .dash-card .lbl { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-top: 4px; }
+  .dash-card.highlight .val { color: #10b981; }
+
+  /* Status Banner */
+  .status-banner { text-align: center; font-weight: 600; padding: 10px 16px; border-radius: 8px; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; margin-bottom: 20px; }
+
+  /* Question Box */
+  .question-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; margin-bottom: 20px; }
+  .q-header { font-size: 12px; font-weight: 800; color: #2563eb; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .q-text { font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 16px; line-height: 1.4; }
+  .answer-form { display: flex; gap: 10px; max-width: 600px; }
+  .answer-form input { flex: 1; }
+  .feedback { margin-top: 10px; font-weight: 700; font-size: 14px; min-height: 20px; }
+  .feedback.ok { color: #10b981; }
+  .feedback.err { color: #ef4444; }
+
+  /* Main Layout: Grid & Word Lists */
+  .game-layout { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+  
+  /* Grid Container */
+  .grid-container { position: relative; background: #0f172a; padding: 12px; border-radius: 16px; user-select: none; }
+  .grid { display: grid; grid-template-columns: repeat(15, 1fr); gap: 4px; aspect-ratio: 1; }
+  .cell { border: none; background: #1e293b; color: #f8fafc; border-radius: 6px; font-size: clamp(12px, 1.8vw, 18px); font-weight: 700; cursor: pointer; transition: background 0.15s, transform 0.1s; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; }
+  .cell:hover { background: #334155; }
+  .cell.first { background: #3b82f6 !important; color: white; transform: scale(1.05); }
+  .cell.found { background: #10b981 !important; color: white; }
+
+  /* Lock & Pause Overlays */
+  .overlay { position: absolute; inset: 0; background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(4px); border-radius: 16px; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; padding: 24px; z-index: 10; }
+  .overlay.show { display: flex; }
+  .overlay h2 { margin: 0 0 10px 0; font-size: 24px; color: #f8fafc; }
+  .overlay p { color: #94a3b8; font-size: 15px; max-width: 400px; margin: 0 0 20px 0; line-height: 1.5; }
+
+  /* Side Panels */
+  .side-panel { display: flex; flex-direction: column; gap: 16px; }
+  .word-list-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px; }
+  .word-list-box h3 { margin: 0 0 12px 0; font-size: 15px; color: #0f172a; display: flex; justify-content: space-between; align-items: center; }
+  .word-items { display: flex; flex-direction: column; gap: 6px; max-height: 380px; overflow-y: auto; }
+  .word-item { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+  .word-item.released { background: #eff6ff; border-color: #bfdbfe; color: #1e40af; }
+  .word-item.found-both { background: #ecfdf5; border-color: #a7f3d0; color: #065f46; text-decoration: line-through; }
+
+  .found-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { background: #10b981; color: white; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+
+  /* Rules Box */
+  .rules-box { background: #f1f5f9; border-left: 4px solid #2563eb; padding: 12px 16px; border-radius: 0 8px 8px 0; font-size: 13px; color: #475569; margin-top: 10px; line-height: 1.4; }
+
+  /* Final Report Screen */
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
+  .modal-backdrop.show { display: flex; }
+  .modal { background: white; border-radius: 20px; max-width: 550px; width: 100%; padding: 28px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); text-align: center; }
+  .modal h2 { margin: 0 0 8px 0; color: #0f172a; font-size: 26px; }
+  .modal p { color: #64748b; margin: 0 0 20px 0; font-size: 14px; }
+  .report-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; }
+  .report-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; }
+  .report-card .val { font-size: 22px; font-weight: 800; color: #2563eb; }
+  .report-card .lbl { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; }
+
+  @media (max-width: 850px) {
+    .game-layout { grid-template-columns: 1fr; }
+    .side-panel { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-title">
+    <div class="logo">SENAI</div>
+    <h1>Caça-Palavras — Atuadores e Válvulas Pneumáticas</h1>
+  </div>
+</header>
+
+<main>
+  <div class="card">
+    <!-- Controls Bar -->
+    <div class="controls-bar">
+      <div class="field-group">
+        <label for="playerName">Jogador:</label>
+        <input type="text" id="playerName" value="Aluno" placeholder="Seu nome">
+      </div>
+
+      <div class="field-group">
+        <label for="gameMode">Modo de Jogo:</label>
+        <select id="gameMode">
+          <option value="1">1ª Opção: Tempo Ilimitado (Liberação pós-quiz)</option>
+          <option value="2">2ª Opção: Tempo Limite 40 Min (Caça-palavras livre desde o início)</option>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <button id="startBtn" class="btn btn-primary">🎮 Iniciar Jogo</button>
+        <button id="pauseBtn" class="btn btn-warning" disabled>⏸️ Pausar</button>
+      </div>
+    </div>
+
+    <!-- Stats Dashboard -->
+    <div class="dashboard">
+      <div class="dash-card highlight">
+        <div id="accVal" class="val">100%</div>
+        <div class="lbl">Aproveitamento</div>
+      </div>
+      <div class="dash-card">
+        <div id="timerVal" class="val">00:00</div>
+        <div id="timerLbl" class="lbl">Tempo Decorrido</div>
+      </div>
+      <div class="dash-card">
+        <div id="correctVal" class="val">0</div>
+        <div class="lbl">Acertos Quiz</div>
+      </div>
+      <div class="dash-card">
+        <div id="wrongVal" class="val">0</div>
+        <div class="lbl">Erros Quiz</div>
+      </div>
+      <div class="dash-card">
+        <div id="foundVal" class="val">0 / 15</div>
+        <div class="lbl">Palavras Achadas</div>
+      </div>
+    </div>
+
+    <div id="statusBanner" class="status-banner">
+      Selecione o modo e clique em "Iniciar Jogo" para começar!
+    </div>
+
+    <!-- Question Box -->
+    <div class="question-card">
+      <div class="q-header">Pergunta <span id="qNum">1</span> de 15</div>
+      <div id="qText" class="q-text">Clique em "Iniciar Jogo" para carregar as perguntas.</div>
+      
+      <div class="answer-form">
+        <input type="text" id="answerInput" placeholder="Digite sua resposta..." disabled autocomplete="off">
+        <button id="checkBtn" class="btn btn-primary" disabled>Responder</button>
+        <button id="nextBtn" class="btn btn-success" style="display:none;">Próxima ➔</button>
+      </div>
+      <div id="feedback" class="feedback"></div>
+    </div>
+
+    <!-- Game Layout -->
+    <div class="game-layout">
+      <!-- Grid Container -->
+      <div class="grid-container">
+        <div id="grid" class="grid"></div>
+
+        <!-- Lock Overlay (Mode 1) -->
+        <div id="lockOverlay" class="overlay">
+          <h2>🔒 Caça-Palavras Bloqueado</h2>
+          <p>Na 1ª Opção de jogo, responda corretamente a todas as 15 perguntas para liberar a grade do caça-palavras!</p>
+        </div>
+
+        <!-- Pause Overlay -->
+        <div id="pauseOverlay" class="overlay">
+          <h2>⏸️ Jogo Pausado</h2>
+          <p>O tempo está congelado. Clique abaixo para retornar à partida.</p>
+          <button id="resumeBtn" class="btn btn-primary">Retomar Jogo</button>
+        </div>
+      </div>
+
+      <!-- Side Panels -->
+      <div class="side-panel">
+        <div class="word-list-box">
+          <h3>Lista do Questionário</h3>
+          <div id="wordItems" class="word-items"></div>
+        </div>
+
+        <div class="word-list-box" style="background: #f0fdf4; border-color: #bbf7d0;">
+          <h3 style="color: #166534;">Encontradas na Grade</h3>
+          <div id="foundChips" class="found-chips">
+            <span style="font-size:12px; color:#64748b; font-style:italic;">Nenhuma palavra selecionada ainda.</span>
+          </div>
+        </div>
+
+        <div id="rulesTip" class="rules-box">
+          <strong>Regras do Modo:</strong> Selecione o modo acima.
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Final Report Modal -->
+<div id="reportModal" class="modal-backdrop">
+  <div class="modal">
+    <h2 id="modalTitle">🎉 Atividade Concluída!</h2>
+    <p id="modalSub">Confira seu desempenho final no desafio:</p>
+
+    <div class="report-grid">
+      <div class="report-card">
+        <div id="repPlayer" class="val" style="font-size: 16px;">Aluno</div>
+        <div class="lbl">Jogador</div>
+      </div>
+      <div class="report-card">
+        <div id="repAcc" class="val" style="color: #10b981;">100%</div>
+        <div class="lbl">Aproveitamento</div>
+      </div>
+      <div class="report-card">
+        <div id="repTime" class="val">00:00</div>
+        <div class="lbl">Tempo Utilizado</div>
+      </div>
+      <div class="report-card">
+        <div id="repFound" class="val" style="color: #10b981;">15/15</div>
+        <div class="lbl">Palavras Achadas</div>
+      </div>
+    </div>
+
+    <button id="restartModalBtn" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 12px;">🔄 Jogar Novamente</button>
+  </div>
+</div>
+
+<script>
+(function() {
+  "use strict";
+
+  // Question Database
+  const QUESTION_BANK = [
+    ["Qual tipo de cilindro realiza movimento linear em apenas um sentido com retorno por mola?", "SIMPLES ACAO"],
+    ["Qual cilindro utiliza ar comprimido tanto para o avanço quanto para o retorno?", "DUPLA ACAO"],
+    ["Qual elemento converte a energia do ar comprimido em movimento e força mecânica?", "ATUADOR"],
+    ["Dispositivo que controla o fluxo, a pressão ou a direção do ar comprimido em um circuito?", "VALVULA"],
+    ["Atuador pneumático que economiza espaço longitudinal por não possuir haste externa?", "SEM HASTE"],
+    ["Atuador pneumático ideal para movimentação e fixação em espaços reduzidos?", "COMPACTO"],
+    ["Atuador projetado para converter a energia do ar comprimido em movimento angular ou giro?", "ROTATIVO"],
+    ["Dispositivo pneumático utilizado para segurar, agarrar e manipular peças em automação?", "PINCA"],
+    ["Válvula direcional com 2 vias e 2 posições, usada para abrir ou fechar o fluxo de ar?", "VALVULA 2/2"],
+    ["Válvula muito usada para comandar atuadores de simples ação (3 vias e 2 posições)?", "VALVULA 3/2"],
+    ["Válvula direcional de 5 vias e 2 posições ideal para controlar cilindros de dupla ação?", "VALVULA 5/2"],
+    ["Qual válvula permite o fluxo de ar em apenas um sentido e bloqueia no sentido oposto?", "RETENCAO"],
+    ["Qual válvula é utilizada para controlar a vazão e ajustar a velocidade do atuador?", "FLUXO"],
+    ["Qual válvula permite a rápida descarga do ar para a atmosfera aumentando a velocidade do atuador?", "ESCAPE RAPIDO"],
+    ["Elemento interno de cilindros tradicionais que transmite a força do êmbolo para a carga?", "HASTE"]
+  ];
+
+  const GRID_SIZE = 15;
+  const DIRECTIONS = [[0,1], [1,0], [0,-1], [-1,0], [1,1], [-1,-1], [1,-1], [-1,1]];
+  const MODE_2_SECONDS = 40 * 60; // 40 minutos
+
+  // Game State
+  let currentQuestions = [];
+  let currentWords = [];
+  let board = [];
+  let selectedCell = null;
+  
+  let mode = "1";
+  let isPlaying = false;
+  let isPaused = false;
+  let isGridUnlocked = false;
+  let currentQIdx = 0;
+  let isWaitingNext = false;
+
+  let releasedWords = {}; // Quiz acertado
+  let foundGridWords = {}; // Selecionado no caça-palavras
+
+  let correctCount = 0;
+  let wrongCount = 0;
+  let timerSeconds = 0;
+  let timerTimer = null;
+
+  // Elements
+  const startBtn = document.getElementById("startBtn");
+  const pauseBtn = document.getElementById("pauseBtn");
+  const resumeBtn = document.getElementById("resumeBtn");
+  const gameModeSelect = document.getElementById("gameMode");
+  const playerNameInput = document.getElementById("playerName");
+
+  const accVal = document.getElementById("accVal");
+  const timerVal = document.getElementById("timerVal");
+  const timerLbl = document.getElementById("timerLbl");
+  const correctVal = document.getElementById("correctVal");
+  const wrongVal = document.getElementById("wrongVal");
+  const foundVal = document.getElementById("foundVal");
+  const statusBanner = document.getElementById("statusBanner");
+
+  const qNum = document.getElementById("qNum");
+  const qText = document.getElementById("qText");
+  const answerInput = document.getElementById("answerInput");
+  const checkBtn = document.getElementById("checkBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const feedback = document.getElementById("feedback");
+
+  const gridEl = document.getElementById("grid");
+  const lockOverlay = document.getElementById("lockOverlay");
+  const pauseOverlay = document.getElementById("pauseOverlay");
+  const wordItemsEl = document.getElementById("wordItems");
+  const foundChipsEl = document.getElementById("foundChips");
+  const rulesTip = document.getElementById("rulesTip");
+
+  const reportModal = document.getElementById("reportModal");
+  const repPlayer = document.getElementById("repPlayer");
+  const repAcc = document.getElementById("repAcc");
+  const repTime = document.getElementById("repTime");
+  const repFound = document.getElementById("repFound");
+  const restartModalBtn = document.getElementById("restartModalBtn");
+
+  // Utilities
+  function normalizeStr(str) {
+    return String(str).toUpperCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Z0-9]/g, "");
+  }
+
+  function shuffleArray(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function formatMMSS(sec) {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+  }
+
+  // Grid Generator
+  function createBoard() {
+    for (let attempt = 0; attempt < 100; attempt++) {
+      board = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(""));
+      let success = true;
+      const sorted = shuffleArray(currentWords).sort((a,b) => normalizeStr(b).length - normalizeStr(a).length);
+
+      for (const w of sorted) {
+        if (!placeWord(normalizeStr(w))) {
+          success = false;
+          break;
+        }
+      }
+
+      if (success) {
+        for (let r = 0; r < GRID_SIZE; r++) {
+          for (let c = 0; c < GRID_SIZE; c++) {
+            if (!board[r][c]) {
+              board[r][c] = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+            }
+          }
+        }
+        return;
+      }
+    }
+  }
+
+  function placeWord(wordNorm) {
+    for (let t = 0; t < 1500; t++) {
+      const dir = DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)];
+      const r = Math.floor(Math.random() * GRID_SIZE);
+      const c = Math.floor(Math.random() * GRID_SIZE);
+
+      let canFit = true;
+      for (let i = 0; i < wordNorm.length; i++) {
+        const nr = r + dir[0] * i;
+        const nc = c + dir[1] * i;
+        if (nr < 0 || nr >= GRID_SIZE || nc < 0 || nc >= GRID_SIZE || (board[nr][nc] && board[nr][nc] !== wordNorm[i])) {
+          canFit = false;
+          break;
+        }
+      }
+
+      if (canFit) {
+        for (let i = 0; i < wordNorm.length; i++) {
+          board[r + dir[0] * i][c + dir[1] * i] = wordNorm[i];
+        }
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function renderGrid() {
+    gridEl.innerHTML = "";
+    for (let r = 0; r < GRID_SIZE; r++) {
+      for (let c = 0; c < GRID_SIZE; c++) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "cell";
+        btn.textContent = board[r][c];
+        btn.dataset.r = r;
+        btn.dataset.c = c;
+        btn.addEventListener("click", () => handleCellClick(btn));
+        gridEl.appendChild(btn);
+      }
+    }
+  }
+
+  function renderWordLists() {
+    wordItemsEl.innerHTML = "";
+    currentWords.forEach(w => {
+      const norm = normalizeStr(w);
+      const div = document.createElement("div");
+      div.className = "word-item";
+      div.id = "witem-" + norm;
+      div.innerHTML = `<span>???</span><span>🔒</span>`;
+      wordItemsEl.appendChild(div);
+    });
+  }
+
+  function updateChips() {
+    const keys = Object.keys(foundGridWords);
+    if (keys.length === 0) {
+      foundChipsEl.innerHTML = `<span style="font-size:12px; color:#64748b; font-style:italic;">Nenhuma palavra selecionada ainda.</span>`;
+      return;
+    }
+    foundChipsEl.innerHTML = "";
+    keys.forEach(norm => {
+      const orig = currentWords.find(w => normalizeStr(w) === norm);
+      const chip = document.createElement("div");
+      chip.className = "chip";
+      chip.textContent = "✓ " + orig;
+      foundChipsEl.appendChild(chip);
+    });
+  }
+
+  // Gameplay Logic
+  function handleCellClick(cell) {
+    if (!isPlaying || isPaused) return;
+    if (mode === "1" && !isGridUnlocked) {
+      statusBanner.textContent = "🔒 Responda a todas as 15 perguntas para desbloquear o caça-palavras!";
+      return;
+    }
+
+    if (!selectedCell) {
+      selectedCell = cell;
+      cell.classList.add("first");
+      statusBanner.textContent = "Clique na última letra da palavra.";
+      return;
+    }
+
+    if (selectedCell === cell) {
+      clearCellSelection();
+      return;
+    }
+
+    const line = getLineCells(selectedCell, cell);
+    if (!line) {
+      clearCellSelection();
+      selectedCell = cell;
+      cell.classList.add("first");
+      statusBanner.textContent = "Selecione uma linha, coluna ou diagonal válida.";
+      return;
+    }
+
+    const wordStr = line.map(c => c.textContent).join("");
+    const revStr = wordStr.split("").reverse().join("");
+    const matched = currentWords.find(w => normalizeStr(w) === wordStr || normalizeStr(w) === revStr);
+
+    clearCellSelection();
+
+    if (!matched) {
+      statusBanner.textContent = "A sequência selecionada não é uma das palavras do jogo.";
+      return;
+    }
+
+    const normMatched = normalizeStr(matched);
+    if (foundGridWords[normMatched]) {
+      statusBanner.textContent = `A palavra "${matched}" já foi encontrada!`;
+      return;
+    }
+
+    // Mark as found
+    foundGridWords[normMatched] = true;
+    line.forEach(c => c.classList.add("found"));
+    updateChips();
+    updateStats();
+
+    const wItem = document.getElementById("witem-" + normMatched);
+    if (wItem && releasedWords[normMatched]) {
+      wItem.className = "word-item found-both";
+      wItem.innerHTML = `<span>${matched}</span><span>✅</span>`;
+    }
+
+    statusBanner.textContent = `🎉 Você encontrou "${matched}"!`;
+    checkGameFinish();
+  }
+
+  function clearCellSelection() {
+    if (selectedCell) selectedCell.classList.remove("first");
+    selectedCell = null;
+  }
+
+  function getLineCells(c1, c2) {
+    const r1 = +c1.dataset.r, col1 = +c1.dataset.c;
+    const r2 = +c2.dataset.r, col2 = +c2.dataset.c;
+    const dr = Math.sign(r2 - r1);
+    const dc = Math.sign(col2 - col1);
+
+    if (r1 !== r2 && col1 !== col2 && Math.abs(r2 - r1) !== Math.abs(col2 - col1)) return null;
+
+    const steps = Math.max(Math.abs(r2 - r1), Math.abs(col2 - col1)) + 1;
+    const line = [];
+    for (let i = 0; i < steps; i++) {
+      const el = gridEl.querySelector(`.cell[data-r="${r1 + dr * i}"][data-c="${col1 + dc * i}"]`);
+      line.push(el);
+    }
+    return line;
+  }
+
+  function showQuestion() {
+    qNum.textContent = currentQIdx + 1;
+    qText.textContent = currentQuestions[currentQIdx][0];
+    answerInput.value = "";
+    answerInput.disabled = false;
+    checkBtn.disabled = false;
+    nextBtn.style.display = "none";
+    feedback.textContent = "";
+    feedback.className = "feedback";
+    setTimeout(() => answerInput.focus(), 50);
+  }
+
+  function verifyAnswer() {
+    if (!isPlaying || isPaused || isWaitingNext) return;
+    const typed = normalizeStr(answerInput.value);
+    if (!typed) return;
+
+    const correctNorm = normalizeStr(currentQuestions[currentQIdx][1]);
+    const correctDisplay = currentQuestions[currentQIdx][1];
+
+    if (typed !== correctNorm) {
+      wrongCount++;
+      updateStats();
+      feedback.textContent = "❌ Resposta incorreta! Tente novamente.";
+      feedback.className = "feedback err";
+      answerInput.focus();
+      return;
+    }
+
+    // Correct
+    correctCount++;
+    releasedWords[correctNorm] = true;
+    updateStats();
+
+    const wItem = document.getElementById("witem-" + correctNorm);
+    if (wItem) {
+      if (foundGridWords[correctNorm]) {
+        wItem.className = "word-item found-both";
+        wItem.innerHTML = `<span>${correctDisplay}</span><span>✅</span>`;
+      } else {
+        wItem.className = "word-item released";
+        wItem.innerHTML = `<span>${correctDisplay}</span><span>🔓</span>`;
+      }
+    }
+
+    feedback.textContent = "✅ Resposta correta!";
+    feedback.className = "feedback ok";
+    statusBanner.textContent = `Excelente! Palavra "${correctDisplay}" liberada!`;
+
+    answerInput.disabled = true;
+    checkBtn.disabled = true;
+    isWaitingNext = true;
+    nextBtn.style.display = "inline-flex";
+  }
+
+  function nextQuestion() {
+    if (!isWaitingNext) return;
+    isWaitingNext = false;
+    currentQIdx++;
+
+    if (currentQIdx < currentQuestions.length) {
+      showQuestion();
+    } else {
+      // Finished all 15 questions
+      nextBtn.style.display = "none";
+      qNum.textContent = currentQuestions.length;
+      answerInput.disabled = true;
+      checkBtn.disabled = true;
+
+      if (mode === "1") {
+        isGridUnlocked = true;
+        lockOverlay.classList.remove("show");
+        qText.textContent = "🎉 Quiz concluído! A grade do caça-palavras foi desbloqueada. Encontre todas as palavras!";
+        statusBanner.textContent = "Caça-palavras desbloqueado! Procure as palavras na grade.";
+      } else {
+        qText.textContent = "Todas as perguntas foram respondidas! Continue marcando no caça-palavras.";
+        statusBanner.textContent = "Todas as perguntas do questionário foram concluídas!";
+      }
+    }
+  }
+
+  function updateStats() {
+    correctVal.textContent = correctCount;
+    wrongVal.textContent = wrongCount;
+
+    const total = correctCount + wrongCount;
+    const acc = total > 0 ? Math.round((correctCount / total) * 100) : 100;
+    accVal.textContent = acc + "%";
+
+    const countFound = Object.keys(foundGridWords).length;
+    foundVal.textContent = `${countFound} / ${currentWords.length}`;
+  }
+
+  function startTimer() {
+    clearInterval(timerTimer);
+    timerTimer = setInterval(() => {
+      if (isPlaying && !isPaused) {
+        if (mode === "1") {
+          timerSeconds++;
+          timerVal.textContent = formatMMSS(timerSeconds);
+        } else {
+          timerSeconds--;
+          timerVal.textContent = formatMMSS(timerSeconds);
+          if (timerSeconds <= 0) {
+            handleTimeOut();
+          }
+        }
+      }
+    }, 1000);
+  }
+
+  function stopTimer() {
+    clearInterval(timerTimer);
+  }
+
+  function handleTimeOut() {
+    stopTimer();
+    isPlaying = false;
+    alert("⏰ Tempo Esgotado! O tempo limite de 40 minutos foi atingido. O jogo será reiniciado com perguntas embaralhadas.");
+    startGame();
+  }
+
+  function checkGameFinish() {
+    if (Object.keys(foundGridWords).length === currentWords.length) {
+      isPlaying = false;
+      stopTimer();
+
+      const name = playerNameInput.value.trim() || "Aluno";
+      repPlayer.textContent = name;
+      repAcc.textContent = accVal.textContent;
+      repFound.textContent = `${currentWords.length}/${currentWords.length}`;
+
+      if (mode === "1") {
+        repTime.textContent = timerVal.textContent;
+      } else {
+        const elapsed = MODE_2_SECONDS - timerSeconds;
+        repTime.textContent = formatMMSS(elapsed);
+      }
+
+      reportModal.classList.add("show");
+      statusBanner.textContent = "🏆 Parabéns! Você concluiu com sucesso todo o desafio!";
+      pauseBtn.disabled = true;
+    }
+  }
+
+  function togglePause() {
+    if (!isPlaying || mode === "2") return;
+    isPaused = !isPaused;
+    if (isPaused) {
+      pauseOverlay.classList.add("show");
+      pauseBtn.textContent = "▶️ Continuar";
+      statusBanner.textContent = "Jogo pausado.";
+    } else {
+      pauseOverlay.classList.remove("show");
+      pauseBtn.textContent = "⏸️ Pausar";
+      statusBanner.textContent = "Jogo retomado!";
+    }
+  }
+
+  function updateRulesDisplay() {
+    mode = gameModeSelect.value;
+    if (mode === "1") {
+      rulesTip.innerHTML = "<strong>1ª Opção:</strong> Tempo ilimitado com pausa liberada. O caça-palavras fica bloqueado até que todas as 15 questões sejam respondidas.";
+      timerLbl.textContent = "Tempo Decorrido";
+    } else {
+      rulesTip.innerHTML = "<strong>2ª Opção:</strong> Limite fixo de 40 minutos sem opção de pausa. A seleção de palavras fica disponível desde o início. Se o tempo acabar, reinicia automaticamente.";
+      timerLbl.textContent = "Tempo Restante";
+    }
+  }
+
+  function startGame() {
+    mode = gameModeSelect.value;
+
+    // Embaralhar sempre que iniciar ou reiniciar
+    currentQuestions = shuffleArray(QUESTION_BANK);
+    currentWords = currentQuestions.map(q => q[1]);
+
+    releasedWords = {};
+    foundGridWords = {};
+    currentQIdx = 0;
+    selectedCell = null;
+    isPlaying = true;
+    isPaused = false;
+    isWaitingNext = false;
+
+    correctCount = 0;
+    wrongCount = 0;
+
+    reportModal.classList.remove("show");
+    pauseOverlay.classList.remove("show");
+
+    if (mode === "1") {
+      isGridUnlocked = false;
+      lockOverlay.classList.add("show");
+      pauseBtn.disabled = false;
+      pauseBtn.textContent = "⏸️ Pausar";
+      timerSeconds = 0;
+      timerVal.textContent = "00:00";
+    } else {
+      isGridUnlocked = true;
+      lockOverlay.classList.remove("show");
+      pauseBtn.disabled = true;
+      pauseBtn.textContent = "Pausa Desativada";
+      timerSeconds = MODE_2_SECONDS;
+      timerVal.textContent = formatMMSS(timerSeconds);
+    }
+
+    updateRulesDisplay();
+    updateStats();
+    startTimer();
+
+    createBoard();
+    renderGrid();
+    renderWordLists();
+    updateChips();
+    showQuestion();
+
+    if (mode === "1") {
+      statusBanner.textContent = "Responda às 15 perguntas para desbloquear o caça-palavras!";
+    } else {
+      statusBanner.textContent = "Você tem 40 minutos! Responda às perguntas e procure as palavras livremente.";
+    }
+
+    startBtn.textContent = "🔄 Reiniciar Jogo";
+  }
+
+  // Event Listeners
+  startBtn.addEventListener("click", startGame);
+  pauseBtn.addEventListener("click", togglePause);
+  resumeBtn.addEventListener("click", togglePause);
+  checkBtn.addEventListener("click", verifyAnswer);
+  nextBtn.addEventListener("click", nextQuestion);
+  restartModalBtn.addEventListener("click", startGame);
+  gameModeSelect.addEventListener("change", updateRulesDisplay);
+
+  answerInput.addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      verifyAnswer();
+    }
+  });
+
+  // Initial setup
+  updateRulesDisplay();
+  createBoard();
+  renderGrid();
+  renderWordLists();
+
+})();
+</script>
+</body>
+</html>
