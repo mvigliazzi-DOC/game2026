@@ -23,12 +23,13 @@ h2{color:#0046ad;margin-top:0;font-size:18px}
 .stats-item{font-weight:bold;color:#17345e}
 .stats-item span{color:#0046ad}
 
-/* Badges em Destaque (Tempo + Percentual) */
+/* Badges em Destaque (Tempo + Percentual + Pausa) */
 .highlight-container{
   grid-column: span 2;
   display:flex;
-  gap:10px;
+  gap:8px;
   margin-top:4px;
+  flex-wrap:wrap;
 }
 .accuracy-badge, .timer-badge{
   flex:1;
@@ -43,9 +44,29 @@ h2{color:#0046ad;margin-top:0;font-size:18px}
   align-items:center;
   justify-content:center;
   gap:6px;
+  min-width:100px;
 }
 .timer-badge{background:linear-gradient(135deg, #267344, #34a853)}
 .accuracy-badge span, .timer-badge span{color:#fff !important;font-size:15px}
+
+/* Botão de Pausa */
+#btn-pause{
+  border:0;
+  border-radius:20px;
+  padding:8px 14px;
+  background:#f59e0b;
+  color:#fff;
+  font-weight:800;
+  font-size:13px;
+  cursor:pointer;
+  box-shadow:0 3px 8px rgba(245, 158, 11, 0.3);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+}
+#btn-pause:disabled{background:#cbd9ed;cursor:not-allowed;box-shadow:none}
+#btn-pause.paused{background:#075ed7}
 
 .question-box{background:#f5f8fd;border-radius:12px;padding:14px;margin:14px 0}
 .question-number{font-size:12px;font-weight:900;color:#0046ad;text-transform:uppercase;margin-bottom:5px}
@@ -60,12 +81,12 @@ h2{color:#0046ad;margin-top:0;font-size:18px}
 
 .layout{display:flex;flex-direction:column;gap:18px}
 
-.grid{display:grid;grid-template-columns:repeat(16,1fr);gap:2px;background:#d7e5f8;padding:4px;border-radius:10px;touch-action:none}
+.grid{display:grid;grid-template-columns:repeat(16,1fr);gap:2px;background:#d7e5f8;padding:4px;border-radius:10px;touch-action:none;transition:opacity 0.2s}
+.grid.paused-grid{opacity:0.3;pointer-events:none}
 .cell{border:0;background:#fff;border-radius:3px;aspect-ratio:1;font-size:clamp(10px, 3.8vw, 16px);font-weight:bold;color:#17345e;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center}
 .cell.first{background:#8bbcff;color:#003d8f}
 .cell.found{background:#e30613;color:#fff}
 
-/* Listas de Palavras */
 .words-container{display:flex;flex-direction:column;gap:15px}
 .words-title{font-size:14px;font-weight:bold;color:#0046ad;margin-bottom:6px;display:block}
 .words{display:grid;grid-template-columns:1fr 1fr;gap:6px}
@@ -133,11 +154,12 @@ h2{color:#0046ad;margin-top:0;font-size:18px}
       <div class="stats-item">Acertos: <span id="lbl-rights">0</span></div>
       <div class="stats-item">Erros: <span id="lbl-wrongs">0</span></div>
       
-      <!-- CAMPO EM DESTAQUE: PERCENTUAL + TEMPO DE JOGO -->
+      <!-- CAMPO EM DESTAQUE: TEMPO + PERCENTUAL + BOTÃO DE PAUSA -->
       <div class="highlight-container">
         <div class="timer-badge">
           ⏱️ <span id="lbl-timer">00:00</span>
         </div>
+        <button id="btn-pause" type="button" disabled>⏸️ Pausar</button>
         <div class="accuracy-badge">
           🎯 <span id="lbl-accuracy">0%</span>
         </div>
@@ -174,7 +196,6 @@ h2{color:#0046ad;margin-top:0;font-size:18px}
           <div id="words" class="words"></div>
         </div>
 
-        <!-- SEÇÃO: PALAVRAS ENCONTRADAS NO CAÇA-PALAVRAS -->
         <div class="found-list-box">
           <span class="words-title" style="color:#e30613">🔍 Encontradas no Caça-Palavras</span>
           <div id="found-words-grid" class="found-words-grid">
@@ -239,7 +260,7 @@ const WORDS = QUESTIONS.map(q => q[1]);
 const SIZE = 16;
 const DIRS = [[0,1],[1,0],[0,-1],[-1,0],[1,1],[-1,-1],[1,-1],[-1,1]];
 
-let board = [], first = null, found = {}, released = {}, current = 0, playing = false, waiting = false;
+let board = [], first = null, found = {}, released = {}, current = 0, playing = false, waiting = false, isPaused = false;
 
 let playerName = "";
 let correctAnswers = 0;
@@ -255,6 +276,7 @@ const count = document.getElementById("count");
 const status = document.getElementById("status");
 const finish = document.getElementById("finish");
 const start = document.getElementById("start");
+const btnPause = document.getElementById("btn-pause");
 const question = document.getElementById("question");
 const qnum = document.getElementById("qnum");
 const answer = document.getElementById("answer");
@@ -292,17 +314,39 @@ function formatTime(s){
 }
 
 function startTimer(){
-  clearInterval(timerInterval);
-  secondsElapsed = 0;
-  lblTimer.textContent = "00:00";
+  stopTimer();
   timerInterval = setInterval(() => {
-    secondsElapsed++;
-    lblTimer.textContent = formatTime(secondsElapsed);
+    if(!isPaused){
+      secondsElapsed++;
+      lblTimer.textContent = formatTime(secondsElapsed);
+    }
   }, 1000);
 }
 
 function stopTimer(){
   clearInterval(timerInterval);
+}
+
+function togglePause(){
+  if(!playing) return;
+  isPaused = !isPaused;
+  if(isPaused){
+    btnPause.textContent = "▶️ Continuar";
+    btnPause.classList.add("paused");
+    grid.classList.add("paused-grid");
+    answer.disabled = true;
+    check.disabled = true;
+    status.textContent = "Jogo pausado. Clique em 'Continuar' para retomar.";
+  } else {
+    btnPause.textContent = "⏸️ Pausar";
+    btnPause.classList.remove("paused");
+    grid.classList.remove("paused-grid");
+    if(!waiting){
+      answer.disabled = false;
+      check.disabled = false;
+    }
+    status.textContent = "Jogo retomado!";
+  }
 }
 
 function updateAccuracy(){
@@ -405,7 +449,7 @@ function getLine(a,b){
 }
 
 function selectCell(cell){
-  if(!playing) return;
+  if(!playing || isPaused) return;
   if(!first){
     first = cell;
     cell.classList.add("first");
@@ -427,7 +471,6 @@ function selectCell(cell){
   let text = A.map(c => c.textContent).join("");
   let rev = text.split("").reverse().join("");
   
-  // PERMITE SELECIONAR QUALQUER PALAVRA DA LISTA QUE AINDA NÃO FOI ENCONTRADA
   let word = WORDS.find(w => !found[normalize(w)] && (normalize(w) === text || normalize(w) === rev));
   clearFirst();
   
@@ -440,13 +483,11 @@ function selectCell(cell){
   found[normW] = true;
   A.forEach(c => c.classList.add("found"));
   
-  // Atualiza no quadro original se já foi liberada por resposta
   let item = document.getElementById("w-" + normW);
   if(released[normW]){
     item.classList.add("done");
   }
 
-  // ADICIONA À LISTA DE PALAVRAS ENCONTRADAS NO CAÇA-PALAVRAS
   addFoundWordTag(word);
 
   count.textContent = Object.keys(found).length;
@@ -468,6 +509,7 @@ function addFoundWordTag(word){
 
 function showFinalReport(){
   stopTimer();
+  btnPause.disabled = true;
   document.getElementById("res-name").textContent = playerName;
   document.getElementById("res-rights").textContent = correctAnswers;
   document.getElementById("res-wrongs").textContent = wrongAnswers;
@@ -496,7 +538,7 @@ function showQuestion(){
 }
 
 function verify(){
-  if(!playing || waiting) return;
+  if(!playing || waiting || isPaused) return;
   let typed = normalize(answer.value);
   let correctNorm = normalize(QUESTIONS[current][1]);
   let correctDisplay = QUESTIONS[current][1];
@@ -534,7 +576,7 @@ function verify(){
 }
 
 function nextQuestion(){
-  if(!waiting) return;
+  if(!waiting || isPaused) return;
   waiting = false;
   current++;
   if(current < QUESTIONS.length){
@@ -568,8 +610,16 @@ function startGame(){
   lblPlayer.textContent = playerName;
   correctAnswers = 0;
   wrongAnswers = 0;
+  secondsElapsed = 0;
+  isPaused = false;
   lblRights.textContent = "0";
   lblWrongs.textContent = "0";
+  lblTimer.textContent = "00:00";
+  btnPause.disabled = false;
+  btnPause.textContent = "⏸️ Pausar";
+  btnPause.classList.remove("paused");
+  grid.classList.remove("paused-grid");
+  
   updateAccuracy();
   startTimer();
 
@@ -583,7 +633,7 @@ function startGame(){
   finish.classList.remove("show");
   nextWrap.style.display = "none";
   
-  foundWordsGrid.innerHTML = '<div font-size:11px;color:#8093ad;grid-column:span 2;text-align:center;padding:5px" id="no-words-msg">Nenhuma palavra selecionada na grade ainda.</div>';
+  foundWordsGrid.innerHTML = '<div style="font-size:11px;color:#8093ad;grid-column:span 2;text-align:center;padding:5px" id="no-words-msg">Nenhuma palavra selecionada na grade ainda.</div>';
   
   buildBoard();
   renderGrid();
@@ -594,6 +644,7 @@ function startGame(){
 }
 
 start.addEventListener("click", startGame);
+btnPause.addEventListener("click", togglePause);
 check.addEventListener("click", verify);
 nextButton.addEventListener("click", nextQuestion);
 answer.addEventListener("keydown", e => {
