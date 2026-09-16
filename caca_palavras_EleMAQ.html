@@ -2,99 +2,113 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Caça-Palavras — Elementos de Máquinas</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#eef5ff;color:#17233c;font-family:Arial,sans-serif}
-header{background:#0046ad;color:white;padding:18px 22px;display:flex;gap:16px;align-items:center}
-.logo{background:#e30613;padding:5px 12px;font-weight:900;font-style:italic;font-size:24px}
-h1{margin:0;font-size:24px}
-main{max-width:1050px;margin:auto;padding:20px}
-.box{background:white;border-radius:16px;padding:20px;box-shadow:0 5px 20px #00286418}
-h2{color:#0046ad;margin-top:0}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:#eef5ff;color:#17233c;font-family:Arial,sans-serif;touch-action:manipulation}
+header{background:#0046ad;color:white;padding:12px 16px;display:flex;gap:12px;align-items:center}
+.logo{background:#e30613;padding:4px 8px;font-weight:900;font-style:italic;font-size:20px;border-radius:4px}
+h1{margin:0;font-size:18px;line-height:1.2}
+main{max-width:1050px;margin:auto;padding:12px}
+.box{background:white;border-radius:16px;padding:15px;box-shadow:0 5px 20px rgba(0, 40, 100, 0.1)}
+h2{color:#0046ad;margin-top:0;font-size:18px}
 
-/* Tela do Jogador */
-.player-setup{background:#f5f8fd;border-radius:14px;padding:20px;margin-bottom:20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
-.player-setup label{font-weight:bold;color:#0046ad}
-#player-name{flex:1;min-width:200px;border:2px solid #cbd9ed;border-radius:9px;padding:11px;font-size:16px}
+.player-setup{background:#f5f8fd;border-radius:12px;padding:14px;margin-bottom:15px;display:flex;flex-direction:column;gap:10px}
+.player-setup label{font-weight:bold;color:#0046ad;font-size:14px}
+#player-name{width:100%;border:2px solid #cbd9ed;border-radius:9px;padding:12px;font-size:16px}
 
 /* Barra de Estatísticas */
-.stats-bar{display:flex;gap:15px;flex-wrap:wrap;align-items:center;font-size:14px;background:#e8f1ff;padding:12px 18px;border-radius:12px;margin-bottom:15px}
+.stats-bar{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center;font-size:13px;background:#e8f1ff;padding:12px;border-radius:12px;margin-bottom:15px}
 .stats-item{font-weight:bold;color:#17345e}
 .stats-item span{color:#0046ad}
 
-/* Campo em Destaque do Percentual (Header) */
-.accuracy-badge{
-  margin-left:auto;
+/* Badges em Destaque (Tempo + Percentual) */
+.highlight-container{
+  grid-column: span 2;
+  display:flex;
+  gap:10px;
+  margin-top:4px;
+}
+.accuracy-badge, .timer-badge{
+  flex:1;
   background:linear-gradient(135deg, #0046ad, #075ed7);
   color:#fff;
-  padding:8px 16px;
+  padding:8px 12px;
   border-radius:20px;
   font-weight:900;
-  font-size:15px;
-  box-shadow:0 4px 10px rgba(7, 94, 215, 0.25);
+  font-size:13px;
+  box-shadow:0 3px 8px rgba(7, 94, 215, 0.25);
   display:flex;
   align-items:center;
+  justify-content:center;
   gap:6px;
 }
-.accuracy-badge span{color:#fff !important;font-size:18px}
+.timer-badge{background:linear-gradient(135deg, #267344, #34a853)}
+.accuracy-badge span, .timer-badge span{color:#fff !important;font-size:15px}
 
-.question-box{background:#f5f8fd;border-radius:14px;padding:16px;margin:16px 0}
-.question-number{font-size:13px;font-weight:900;color:#0046ad;text-transform:uppercase;margin-bottom:7px}
-.question{font-size:18px;font-weight:800;line-height:1.35;margin-bottom:13px}
-.answer-row{display:flex;gap:8px}
-#answer{flex:1;border:2px solid #cbd9ed;border-radius:9px;padding:11px;font-size:16px}
-#check,#start{border:0;border-radius:9px;padding:11px 17px;background:#075ed7;color:#fff;font-weight:800;cursor:pointer}
+.question-box{background:#f5f8fd;border-radius:12px;padding:14px;margin:14px 0}
+.question-number{font-size:12px;font-weight:900;color:#0046ad;text-transform:uppercase;margin-bottom:5px}
+.question{font-size:15px;font-weight:800;line-height:1.35;margin-bottom:12px}
+.answer-row{display:flex;flex-direction:column;gap:8px}
+#answer{width:100%;border:2px solid #cbd9ed;border-radius:9px;padding:12px;font-size:16px}
+#check,#start{width:100%;border:0;border-radius:9px;padding:12px;background:#075ed7;color:#fff;font-weight:800;font-size:16px;cursor:pointer}
 #check:disabled,#start:disabled{background:#a0bce8;cursor:not-allowed}
-.feedback{font-size:14px;font-weight:800;margin-top:9px;min-height:18px}
+.feedback{font-size:13px;font-weight:800;margin-top:8px;min-height:18px}
 .ok{color:#267344}
 .no{color:#b3261e}
-.controls{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:18px 0}
-.layout{display:grid;grid-template-columns:minmax(300px,650px) 1fr;gap:22px}
-.grid{display:grid;grid-template-columns:repeat(16,1fr);gap:3px;background:#d7e5f8;padding:7px;border-radius:12px}
-.cell{border:0;background:#fff;border-radius:5px;aspect-ratio:1;font-size:clamp(9px,1.8vw,18px);font-weight:bold;color:#17345e;cursor:pointer;padding:0}
+
+.layout{display:flex;flex-direction:column;gap:18px}
+
+.grid{display:grid;grid-template-columns:repeat(16,1fr);gap:2px;background:#d7e5f8;padding:4px;border-radius:10px;touch-action:none}
+.cell{border:0;background:#fff;border-radius:3px;aspect-ratio:1;font-size:clamp(10px, 3.8vw, 16px);font-weight:bold;color:#17345e;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center}
 .cell.first{background:#8bbcff;color:#003d8f}
 .cell.found{background:#e30613;color:#fff}
-.words{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
-.word{background:#f1f5fa;border-radius:7px;padding:8px;font-size:12px;font-weight:bold}
-.word.released{background:#e8f1ff;color:#0046ad}
+
+/* Listas de Palavras */
+.words-container{display:flex;flex-direction:column;gap:15px}
+.words-title{font-size:14px;font-weight:bold;color:#0046ad;margin-bottom:6px;display:block}
+.words{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.word{background:#f1f5fa;border-radius:6px;padding:6px;font-size:11px;font-weight:bold;text-align:center;color:#8093ad}
+.word.released{background:#e8f1ff;color:#0046ad;border:1px solid #0046ad}
 .word.done{background:#dff3e5;color:#267344;text-decoration:line-through}
-.tip{font-size:13px;color:#53627a;margin-top:10px}
 
-/* Modal / Tela de Resultados Final */
-#finish{display:none;background:#f5f8fd;border:3px solid #0046ad;border-radius:14px;text-align:center;padding:25px;margin-top:18px}
+.found-list-box{background:#f5f8fd;border:1px solid #cbd9ed;border-radius:10px;padding:10px}
+.found-words-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.found-word-tag{background:#e30613;color:#fff;font-weight:bold;font-size:12px;padding:6px 10px;border-radius:6px;text-align:center}
+
+.tip{font-size:12px;color:#53627a;margin-top:8px;line-height:1.3}
+
+/* Modal Final */
+#finish{display:none;background:#f5f8fd;border:3px solid #0046ad;border-radius:14px;text-align:center;padding:18px;margin-top:15px}
 #finish.show{display:block}
-#finish h3{color:#0046ad;font-size:26px;margin-top:0}
-.score-card{background:#fff;border-radius:12px;padding:20px;max-width:420px;margin:15px auto;box-shadow:0 5px 15px rgba(0,0,0,0.08);text-align:left}
-.score-card div{margin-bottom:10px;font-size:16px}
+#finish h3{color:#0046ad;font-size:20px;margin-top:0}
+.score-card{background:#fff;border-radius:12px;padding:15px;margin:12px auto;box-shadow:0 4px 12px rgba(0,0,0,0.06);text-align:left}
+.score-card div{margin-bottom:8px;font-size:14px}
 
-/* Destaque do Percentual Final */
-.final-accuracy-box{
-  background:#eef5ff;
-  border:2px dashed #0046ad;
-  border-radius:10px;
-  padding:15px;
-  text-align:center;
-  margin-top:15px;
-}
-.final-accuracy-box label{
-  display:block;
-  font-size:13px;
-  font-weight:bold;
-  color:#53627a;
-  text-transform:uppercase;
-}
-.final-accuracy-box span{
-  font-size:36px;
-  font-weight:900;
-  color:#0046ad;
-}
+.final-metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.final-box{background:#eef5ff;border:2px dashed #0046ad;border-radius:10px;padding:10px;text-align:center}
+.final-box label{display:block;font-size:11px;font-weight:bold;color:#53627a;text-transform:uppercase}
+.final-box span{font-size:22px;font-weight:900;color:#0046ad}
 
-@media(max-width:800px){.layout{grid-template-columns:1fr}}
-@media(max-width:500px){
-  main{padding:10px}.box{padding:13px}.grid{gap:2px;padding:5px}.words{grid-template-columns:1fr 1fr}h1{font-size:19px}
-  .accuracy-badge{margin-left:0;width:100%;justify-content:center}
+@media(min-width:768px){
+  header{padding:18px 22px}
+  .logo{font-size:24px;padding:5px 12px}
+  h1{font-size:24px}
+  main{padding:20px}
+  .box{padding:20px}
+  .player-setup{flex-direction:row;align-items:center}
+  #player-name{flex:1}
+  #start{width:auto}
+  .stats-bar{display:flex;padding:12px 18px;font-size:14px}
+  .highlight-container{margin-left:auto;grid-column:auto;margin-top:0;width:auto}
+  .accuracy-badge, .timer-badge{font-size:14px;padding:8px 16px}
+  .answer-row{flex-direction:row}
+  #check{width:auto}
+  .layout{display:grid;grid-template-columns:minmax(300px,650px) 1fr;gap:22px}
+  .grid{gap:3px;padding:7px;border-radius:12px}
+  .cell{border-radius:5px}
+  .word{font-size:12px;padding:8px}
 }
 </style>
 </head>
@@ -115,20 +129,25 @@ h2{color:#0046ad;margin-top:0}
     <!-- Estatísticas em Tempo Real -->
     <div class="stats-bar">
       <div class="stats-item">Jogador: <span id="lbl-player">---</span></div>
+      <div class="stats-item">Palavras: <span id="count">0</span> / 20</div>
       <div class="stats-item">Acertos: <span id="lbl-rights">0</span></div>
       <div class="stats-item">Erros: <span id="lbl-wrongs">0</span></div>
-      <div class="stats-item">Palavras: <span id="count">0</span> / 20</div>
       
-      <!-- CAMPO EM DESTAQUE: PERCENTUAL DE ACERTO -->
-      <div class="accuracy-badge">
-        🎯 Aproveitamento: <span id="lbl-accuracy">0%</span>
+      <!-- CAMPO EM DESTAQUE: PERCENTUAL + TEMPO DE JOGO -->
+      <div class="highlight-container">
+        <div class="timer-badge">
+          ⏱️ <span id="lbl-timer">00:00</span>
+        </div>
+        <div class="accuracy-badge">
+          🎯 <span id="lbl-accuracy">0%</span>
+        </div>
       </div>
     </div>
 
-    <div id="status" style="text-align:center;color:#0046ad;font-weight:bold;min-height:24px">Digite seu nome e clique em “Iniciar atividade” para começar.</div>
+    <div id="status" style="text-align:center;color:#0046ad;font-weight:bold;min-height:24px;font-size:13px">Digite seu nome e clique em “Iniciar atividade” para começar.</div>
 
     <h2>Desafio: descubra as palavras</h2>
-    <p>Responda às perguntas sobre elementos de máquinas e descubra as palavras para encontrar no caça-palavras.</p>
+    <p style="font-size:13px;margin-top:-5px">Responda às perguntas ou encontre livremente as palavras na grade do caça-palavras a qualquer momento.</p>
     
     <div class="question-box">
       <div class="question-number">Pergunta <span id="qnum">1</span> de 20</div>
@@ -138,7 +157,7 @@ h2{color:#0046ad;margin-top:0}
         <button id="check" type="button" disabled>Verificar</button>
       </div>
       <div id="nextWrap" style="margin-top:10px;display:none">
-        <button id="nextQuestion" type="button" style="border:0;border-radius:9px;padding:11px 17px;background:#267344;color:#fff;font-weight:800;cursor:pointer">Próxima pergunta</button>
+        <button id="nextQuestion" type="button" style="width:100%;border:0;border-radius:9px;padding:12px;background:#267344;color:#fff;font-weight:800;font-size:16px;cursor:pointer">Próxima pergunta</button>
       </div>
       <div id="feedback" class="feedback"></div>
     </div>
@@ -146,11 +165,22 @@ h2{color:#0046ad;margin-top:0}
     <div class="layout">
       <div>
         <div id="grid" class="grid"></div>
-        <div class="tip">Depois de acertar a resposta, clique na primeira letra e depois na última letra. A palavra pode estar na horizontal, vertical ou diagonal.</div>
+        <div class="tip">Toque na primeira e na última letra de uma palavra no caça-palavras para selecioná-la.</div>
       </div>
-      <div>
-        <strong>Respostas descobertas</strong>
-        <div id="words" class="words"></div>
+      
+      <div class="words-container">
+        <div>
+          <span class="words-title">Respostas das Perguntas</span>
+          <div id="words" class="words"></div>
+        </div>
+
+        <!-- SEÇÃO: PALAVRAS ENCONTRADAS NO CAÇA-PALAVRAS -->
+        <div class="found-list-box">
+          <span class="words-title" style="color:#e30613">🔍 Encontradas no Caça-Palavras</span>
+          <div id="found-words-grid" class="found-words-grid">
+            <div style="font-size:11px;color:#8093ad;grid-column:span 2;text-align:center;padding:5px" id="no-words-msg">Nenhuma palavra selecionada na grade ainda.</div>
+          </div>
+        </div>
       </div>
     </div>
     
@@ -163,10 +193,15 @@ h2{color:#0046ad;margin-top:0}
         <div><strong>Respostas Certas:</strong> <span id="res-rights" style="color:#267344"></span></div>
         <div><strong>Tentativas Incorretas:</strong> <span id="res-wrongs" style="color:#b3261e"></span></div>
         
-        <!-- CAMPO EM DESTAQUE FINAL -->
-        <div class="final-accuracy-box">
-          <label>Aproveitamento Geral</label>
-          <span id="res-pct">0%</span>
+        <div class="final-metrics-grid">
+          <div class="final-box">
+            <label>Tempo Total</label>
+            <span id="res-time">00:00</span>
+          </div>
+          <div class="final-box">
+            <label>Aproveitamento</label>
+            <span id="res-pct">0%</span>
+          </div>
         </div>
       </div>
     </div>
@@ -206,13 +241,16 @@ const DIRS = [[0,1],[1,0],[0,-1],[-1,0],[1,1],[-1,-1],[1,-1],[-1,1]];
 
 let board = [], first = null, found = {}, released = {}, current = 0, playing = false, waiting = false;
 
-// Variáveis da Pontuação
 let playerName = "";
 let correctAnswers = 0;
 let wrongAnswers = 0;
+let timerInterval = null;
+let secondsElapsed = 0;
 
 const grid = document.getElementById("grid");
 const wordsBox = document.getElementById("words");
+const foundWordsGrid = document.getElementById("found-words-grid");
+const noWordsMsg = document.getElementById("no-words-msg");
 const count = document.getElementById("count");
 const status = document.getElementById("status");
 const finish = document.getElementById("finish");
@@ -230,6 +268,7 @@ const lblPlayer = document.getElementById("lbl-player");
 const lblRights = document.getElementById("lbl-rights");
 const lblWrongs = document.getElementById("lbl-wrongs");
 const lblAccuracy = document.getElementById("lbl-accuracy");
+const lblTimer = document.getElementById("lbl-timer");
 
 function normalize(s){
   return String(s).toUpperCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^A-Z0-9]/g,"");
@@ -244,6 +283,26 @@ function shuffle(a){
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
+}
+
+function formatTime(s){
+  let m = Math.floor(s / 60);
+  let sec = s % 60;
+  return (m < 10 ? "0" + m : m) + ":" + (sec < 10 ? "0" + sec : sec);
+}
+
+function startTimer(){
+  clearInterval(timerInterval);
+  secondsElapsed = 0;
+  lblTimer.textContent = "00:00";
+  timerInterval = setInterval(() => {
+    secondsElapsed++;
+    lblTimer.textContent = formatTime(secondsElapsed);
+  }, 1000);
+}
+
+function stopTimer(){
+  clearInterval(timerInterval);
 }
 
 function updateAccuracy(){
@@ -346,11 +405,11 @@ function getLine(a,b){
 }
 
 function selectCell(cell){
-  if(!playing || waiting) return;
+  if(!playing) return;
   if(!first){
     first = cell;
     cell.classList.add("first");
-    status.textContent = "Agora clique na última letra da palavra.";
+    status.textContent = "Toque na última letra da palavra.";
     return;
   }
   if(cell === first){
@@ -362,36 +421,57 @@ function selectCell(cell){
     clearFirst();
     first = cell;
     cell.classList.add("first");
-    status.textContent = "Selecione uma linha, coluna ou diagonal válida.";
+    status.textContent = "Selecione uma linha ou diagonal válida.";
     return;
   }
   let text = A.map(c => c.textContent).join("");
   let rev = text.split("").reverse().join("");
-  let word = WORDS.find(w => released[normalize(w)] && !found[normalize(w)] && (normalize(w) === text || normalize(w) === rev));
+  
+  // PERMITE SELECIONAR QUALQUER PALAVRA DA LISTA QUE AINDA NÃO FOI ENCONTRADA
+  let word = WORDS.find(w => !found[normalize(w)] && (normalize(w) === text || normalize(w) === rev));
   clearFirst();
+  
   if(!word){
-    status.textContent = "Essa sequência não corresponde a uma palavra liberada.";
+    status.textContent = "Essa sequência não corresponde a uma palavra válida do jogo.";
     return;
   }
+  
   let normW = normalize(word);
   found[normW] = true;
   A.forEach(c => c.classList.add("found"));
+  
+  // Atualiza no quadro original se já foi liberada por resposta
   let item = document.getElementById("w-" + normW);
-  item.textContent = word;
-  item.classList.add("done");
-  count.textContent = Object.keys(found).length;
-  status.textContent = "Palavra encontrada: " + word + "!";
+  if(released[normW]){
+    item.classList.add("done");
+  }
 
-  if(Object.keys(found).length === WORDS.length){
+  // ADICIONA À LISTA DE PALAVRAS ENCONTRADAS NO CAÇA-PALAVRAS
+  addFoundWordTag(word);
+
+  count.textContent = Object.keys(found).length;
+  status.textContent = "Palavra encontrada na grade: " + word + "!";
+
+  if(Object.keys(found).length === WORDS.length && current >= QUESTIONS.length){
     playing = false;
     showFinalReport();
   }
 }
 
+function addFoundWordTag(word){
+  if(noWordsMsg) noWordsMsg.style.display = "none";
+  let tag = document.createElement("div");
+  tag.className = "found-word-tag";
+  tag.textContent = word;
+  foundWordsGrid.appendChild(tag);
+}
+
 function showFinalReport(){
+  stopTimer();
   document.getElementById("res-name").textContent = playerName;
   document.getElementById("res-rights").textContent = correctAnswers;
   document.getElementById("res-wrongs").textContent = wrongAnswers;
+  document.getElementById("res-time").textContent = formatTime(secondsElapsed);
   
   let totalAttempts = correctAnswers + wrongAnswers;
   let pct = totalAttempts > 0 ? ((correctAnswers / totalAttempts) * 100).toFixed(1) : "0.0";
@@ -413,7 +493,6 @@ function showQuestion(){
   feedback.textContent = "";
   feedback.className = "feedback";
   nextWrap.style.display = "none";
-  setTimeout(() => answer.focus(), 50);
 }
 
 function verify(){
@@ -428,7 +507,6 @@ function verify(){
     updateAccuracy();
     feedback.textContent = "Resposta incorreta. Tente novamente.";
     feedback.className = "feedback no";
-    answer.focus();
     return;
   }
 
@@ -441,10 +519,14 @@ function verify(){
   if(releasedItem){
     releasedItem.textContent = correctDisplay;
     releasedItem.classList.add("released");
+    if(found[correctNorm]){
+      releasedItem.classList.add("done");
+    }
   }
-  feedback.textContent = "Resposta correta! A palavra foi liberada.";
+  
+  feedback.textContent = "Resposta correta! A palavra foi confirmada.";
   feedback.className = "feedback ok";
-  status.textContent = "Agora procure no caça-palavras: " + correctDisplay;
+  status.textContent = "Resposta correta: " + correctDisplay;
   answer.disabled = true;
   check.disabled = true;
   waiting = true;
@@ -460,11 +542,17 @@ function nextQuestion(){
     status.textContent = "Responda à próxima pergunta.";
   } else {
     nextWrap.style.display = "none";
-    question.textContent = "Todas as perguntas foram respondidas! Encontre as palavras restantes no caça-palavras para finalizar.";
+    question.textContent = "Todas as perguntas foram respondidas!";
     qnum.textContent = QUESTIONS.length;
     answer.disabled = true;
     check.disabled = true;
-    status.textContent = "Todas as palavras foram liberadas! Complete o caça-palavras.";
+    
+    if(Object.keys(found).length === WORDS.length){
+      playing = false;
+      showFinalReport();
+    } else {
+      status.textContent = "Encontre as palavras restantes na grade para finalizar!";
+    }
   }
 }
 
@@ -483,6 +571,7 @@ function startGame(){
   lblRights.textContent = "0";
   lblWrongs.textContent = "0";
   updateAccuracy();
+  startTimer();
 
   found = {};
   released = {};
@@ -494,11 +583,13 @@ function startGame(){
   finish.classList.remove("show");
   nextWrap.style.display = "none";
   
+  foundWordsGrid.innerHTML = '<div font-size:11px;color:#8093ad;grid-column:span 2;text-align:center;padding:5px" id="no-words-msg">Nenhuma palavra selecionada na grade ainda.</div>';
+  
   buildBoard();
   renderGrid();
   renderWords();
   showQuestion();
-  status.textContent = "Responda à primeira pergunta.";
+  status.textContent = "Responda às perguntas ou busque palavras diretamente na grade!";
   start.textContent = "Reiniciar atividade";
 }
 
