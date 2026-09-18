@@ -3,30 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plataforma de Jogos Técnicos Industriais</title>
+    <title>Portal de Jogos Educativos — SENAI</title>
+    <!-- Font Awesome para Ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg-color: #0d1117;
-            --card-bg: #161b22;
-            --text-color: #f0f6fc;
-            --accent-color: #58a6ff;
-            --warning-color: #d29922;
-            --danger-color: #f85149;
-            --success-color: #238636;
-            --border-color: #30363d;
-        }
-
-        @media (prefers-color-scheme: light) {
-            :root {
-                --bg-color: #f6f8fa;
-                --card-bg: #ffffff;
-                --text-color: #1f2328;
-                --accent-color: #0969da;
-                --warning-color: #9a6700;
-                --danger-color: #cf222e;
-                --success-color: #1f883d;
-                --border-color: #d0d7de;
-            }
+            --senai-blue: #0046ad;
+            --senai-blue-dark: #003077;
+            --senai-red: #e30613;
+            --senai-light-blue: #075ed7;
+            --bg-color: #f4f7fb;
+            --card-bg: #ffffff;
+            --text-main: #1c2a38;
+            --text-muted: #5a6e85;
+            --border-radius: 16px;
         }
 
         * {
@@ -38,292 +28,462 @@
 
         body {
             background-color: var(--bg-color);
-            color: var(--text-color);
+            color: var(--text-main);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            padding: 30px 20px;
-            transition: background-color 0.3s ease, color 0.3s ease;
+            line-height: 1.6;
         }
 
+        /* HEADER */
         header {
-            text-align: center;
-            max-width: 900px;
-            margin-bottom: 40px;
+            background: linear-gradient(135deg, var(--senai-blue-dark), var(--senai-blue));
+            color: white;
+            padding: 24px 30px;
+            box-shadow: 0 4px 20px rgba(0, 70, 173, 0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
-        .badge-header {
-            background: var(--accent-color);
-            color: #fff;
-            font-size: 0.8rem;
-            font-weight: bold;
-            padding: 4px 12px;
-            border-radius: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            display: inline-block;
-            margin-bottom: 12px;
-        }
-
-        header h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: var(--text-color);
-            margin-bottom: 10px;
-            line-height: 1.2;
-        }
-
-        header h1 span {
-            color: var(--accent-color);
-        }
-
-        header p {
-            color: #8b949e;
-            font-size: 1.1rem;
-            line-height: 1.5;
-        }
-
-        /* --- DASHBOARD / BANNER DE CARDS --- */
-        .games-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-            gap: 25px;
-            width: 100%;
-            max-width: 1100px;
-            margin-bottom: 40px;
-        }
-
-        .game-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 25px;
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
             display: flex;
-            flex-direction: column;
             justify-content: space-between;
-            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .game-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--accent-color);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        }
-
-        .game-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 4px;
-        }
-
-        .card-maker::before { background: linear-gradient(90deg, #f85149, #d29922); }
-        .card-pneumatica::before { background: linear-gradient(90deg, #58a6ff, #238636); }
-
-        .game-tag {
-            font-size: 0.75rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-            color: var(--warning-color);
-        }
-
-        .game-title {
-            font-size: 1.6rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-            color: var(--text-color);
-        }
-
-        .game-description {
-            font-size: 0.95rem;
-            color: #8b949e;
-            line-height: 1.5;
-            margin-bottom: 20px;
-            flex-grow: 1;
-        }
-
-        .topics-list {
-            display: flex;
+            align-items: center;
             flex-wrap: wrap;
-            gap: 6px;
-            margin-bottom: 25px;
+            gap: 15px;
         }
 
-        .topic-badge {
-            background: var(--bg-color);
-            border: 1px solid var(--border-color);
-            font-size: 0.75rem;
-            padding: 4px 8px;
-            border-radius: 4px;
-            color: var(--accent-color);
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-senai {
+            background: var(--senai-red);
+            color: white;
+            padding: 6px 16px;
+            font-weight: 900;
+            font-style: italic;
+            font-size: 26px;
+            border-radius: 6px;
+            letter-spacing: 1.5px;
+            box-shadow: 0 2px 8px rgba(227, 6, 19, 0.3);
+        }
+
+        .brand-title h1 {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-title p {
+            font-size: 13px;
+            opacity: 0.85;
+        }
+
+        .header-badge {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 8px 16px;
+            border-radius: 30px;
+            backdrop-filter: blur(5px);
+            font-size: 13px;
             font-weight: 600;
-        }
-
-        .btn-play {
-            background-color: var(--accent-color);
-            color: #ffffff;
-            text-decoration: none;
-            text-align: center;
-            font-weight: bold;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: opacity 0.2s ease, background-color 0.2s ease;
-            display: block;
-        }
-
-        .btn-play:hover {
-            opacity: 0.9;
-        }
-
-        .btn-pneumatica {
-            background-color: #238636;
-        }
-
-        .btn-pneumatica:hover {
-            background-color: #2ea043;
-        }
-
-        /* --- SESSÃO INFORMATIVA --- */
-        .info-section {
-            width: 100%;
-            max-width: 1100px;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 40px;
-        }
-
-        .info-section h3 {
-            color: var(--accent-color);
-            margin-bottom: 15px;
-            font-size: 1.2rem;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        /* MAIN CONTENT */
+        main {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+            flex: 1;
+            width: 100%;
+        }
+
+        .hero-banner {
+            background: linear-gradient(135deg, #ffffff, #eef5ff);
+            border: 1px solid #dbe7f6;
+            border-radius: var(--border-radius);
+            padding: 32px;
+            margin-bottom: 35px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.03);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             gap: 20px;
         }
 
-        .info-item {
-            background: var(--bg-color);
-            border: 1px solid var(--border-color);
-            padding: 15px;
-            border-radius: 8px;
+        .hero-text h2 {
+            color: var(--senai-blue);
+            font-size: 26px;
+            margin-bottom: 10px;
         }
 
-        .info-item h4 {
-            font-size: 0.95rem;
-            color: var(--warning-color);
+        .hero-text p {
+            color: var(--text-muted);
+            font-size: 15px;
+            max-width: 700px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            color: var(--senai-blue);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* CARDS GRID */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+            gap: 25px;
+            margin-bottom: 45px;
+        }
+
+        .game-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
+            border: 1px solid #eaf0f8;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: var(--senai-blue);
+        }
+
+        .game-card.featured::before {
+            background: var(--senai-red);
+        }
+
+        .game-card.pneumatica::before {
+            background: #10b981;
+        }
+
+        .game-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0, 70, 173, 0.1);
+        }
+
+        .tag-status {
+            align-self: flex-start;
+            padding: 4px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 15px;
+        }
+
+        .tag-status.recommended {
+            background: #ffebe9;
+            color: var(--senai-red);
+        }
+
+        .tag-status.standard {
+            background: #e8f1ff;
+            color: var(--senai-blue);
+        }
+
+        .tag-status.pneumatic {
+            background: #e6f7f0;
+            color: #059669;
+        }
+
+        .game-card h3 {
+            font-size: 18px;
+            color: var(--text-main);
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+
+        .game-card p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        .card-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            padding-top: 12px;
+            border-top: 1px dashed #e2e8f0;
+        }
+
+        .card-stats span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-play {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: var(--senai-light-blue);
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: background 0.2s;
+            text-align: center;
+        }
+
+        .btn-play:hover {
+            background: var(--senai-blue-dark);
+        }
+
+        /* TABLE SECTION */
+        .table-container {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
+            border: 1px solid #eaf0f8;
+            overflow: hidden;
+            margin-bottom: 40px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background: #f8fafc;
+            color: var(--text-muted);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        td {
+            padding: 18px 24px;
+            border-bottom: 1px solid #edf2f7;
+            font-size: 14px;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: #f8fbff;
+        }
+
+        .file-name {
+            font-family: monospace;
+            background: #f1f5f9;
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: var(--senai-blue);
+            font-weight: 600;
+        }
+
+        .table-link {
+            color: var(--senai-light-blue);
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .table-link:hover {
+            text-decoration: underline;
+        }
+
+        /* FOOTER */
+        footer {
+            background: #0f172a;
+            color: #94a3b8;
+            padding: 30px 20px;
+            text-align: center;
+            font-size: 13px;
+            margin-top: auto;
+        }
+
+        footer p {
             margin-bottom: 8px;
         }
 
-        .info-item p {
-            font-size: 0.88rem;
-            color: #8b949e;
-            line-height: 1.4;
+        footer a {
+            color: #cbd5e1;
+            text-decoration: none;
         }
 
-        footer {
-            margin-top: auto;
-            text-align: center;
-            font-size: 0.85rem;
-            color: #8b949e;
-            border-top: 1px solid var(--border-color);
-            padding-top: 20px;
-            width: 100%;
-            max-width: 1100px;
+        footer a:hover {
+            color: white;
         }
 
-        @media (max-width: 600px) {
-            header h1 { font-size: 1.8rem; }
-            .games-grid { grid-template-columns: 1fr; }
+        @media (max-width: 768px) {
+            .hero-banner {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .header-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <span class="badge-header">Ensino Técnico Industrial</span>
-        <h1>Plataforma de Simulação & <span>Jogos Técnicos</span></h1>
-        <p>Ambiente interativo de aprendizagem gamificada para automação, fabricação mecânica, usinagem CNC e sistemas pneumáticos.</p>
-    </header>
-
-    <main class="games-grid">
-
-        <!-- CARD 1: GT-Desafio Maker -->
-        <article class="game-card card-maker">
-            <div>
-                <div class="game-tag">⚙️ Usinagem & CAD/CAM</div>
-                <h2 class="game-title">Desafio Maker</h2>
-                <p class="game-description">
-                    Do CAD/CAM ao chão de fábrica! Enfrente desafios técnicos envolvendo parâmetros de corte, metrologia, GD&T, programação ISO CNC e processos de usinagem.
-                </p>
-                <div class="topics-list">
-                    <span class="topic-badge">Programação CNC</span>
-                    <span class="topic-badge">CAD/CAM</span>
-                    <span class="topic-badge">Metrologia</span>
-                    <span class="topic-badge">Parâmetros de Corte</span>
-                    <span class="topic-badge">GD&T</span>
-                    <span class="topic-badge">NR 1 / NR 12</span>
-                </div>
+<header>
+    <div class="header-container">
+        <div class="brand">
+            <div class="logo-senai">SENAI</div>
+            <div class="brand-title">
+                <h1>Portal de Jogos Educativos</h1>
+                <p>Plataforma Interativa de Aprendizagem Técnica</p>
             </div>
-            <a href="GT-Desafio_Maker_Simulado.html" class="btn-play">Iniciar Desafio Maker ➔</a>
-        </article>
+        </div>
+        <div class="header-badge">
+            <i class="fa-solid fa-gamepad"></i> Caça-Palavras Interativos
+        </div>
+    </div>
+</header>
 
-        <!-- CARD 2: GT-Introdução a Pneumática -->
-        <article class="game-card card-pneumatica">
-            <div>
-                <div class="game-tag">💨 Automação Industrial</div>
-                <h2 class="game-title">Pressão Extrema</h2>
-                <p class="game-description">
-                    A batalha da pneumática! Teste seus conhecimentos em compressores, tratamento de ar comprimido, redes de distribuição, válvulas e atuadores pneumáticos.
-                </p>
-                <div class="topics-list">
-                    <span class="topic-badge">Ar Comprimido</span>
-                    <span class="topic-badge">Compressores</span>
-                    <span class="topic-badge">Tratamento de Ar</span>
-                    <span class="topic-badge">Redes Pneumáticas</span>
-                    <span class="topic-badge">Válvulas & Atuadores</span>
-                    <span class="topic-badge">Sway Interativo</span>
-                </div>
-            </div>
-            <a href="GT-Introdução a Pneumática V4 final UPDATE.html" class="btn-play btn-pneumatica">Iniciar Pressão Extrema ➔</a>
-        </article>
-
-    </main>
-
-    <section class="info-section">
-        <h3>💡 Recursos da Plataforma</h3>
-        <div class="info-grid">
-            <div class="info-item">
-                <h4>🎯 Modo Treino Individual</h4>
-                <p>Pratique sozinho contra a meta de 75% de aproveitamento técnico e obtenha um diagnóstico detalhado dos seus acertos por tema ao final.</p>
-            </div>
-            <div class="info-item">
-                <h4>🌐 Multi-Jogador em Rede (P2P)</h4>
-                <p>Crie salas de disputa online via WebRTC para até 6 jogadores sem necessidade de cadastros ou servidores externos.</p>
-            </div>
-            <div class="info-item">
-                <h4>📖 Guias & Materiais de Estudo</h4>
-                <p>Acesse resumos teóricos, fórmulas e links para materiais didáticos diretamente durante as partidas para consultar conceitos chave.</p>
-            </div>
+<main>
+    <section class="hero-banner">
+        <div class="hero-text">
+            <h2>Bem-vindo ao Portal de Atividades</h2>
+            <p>Selecione um dos desafios interativos abaixo para praticar e fixar conceitos técnicos sobre Elementos de Máquinas, Atuadores Mecânicos e Válvulas Pneumáticas.</p>
         </div>
     </section>
 
-    <footer>
-        <p>Desenvolvido para Ensino Técnico Industrial • Suporta Modos Local e Multiplayer P2P</p>
-    </footer>
+    <h3 class="section-title"><i class="fa-solid fa-layer-group"></i> Jogos Disponíveis</h3>
+
+    <section class="games-grid">
+        <!-- Card 1 -->
+        <div class="game-card featured">
+            <span class="tag-status recommended">Recomendado</span>
+            <h3>Elementos de Máquinas V3</h3>
+            <p>Versão completa com quiz bloqueante, temporizador ajustável, sistema de estatísticas e relatório final.</p>
+            <div class="card-stats">
+                <span><i class="fa-solid fa-circle-question"></i> 20 Perguntas</span>
+                <span><i class="fa-solid fa-clock"></i> 40 min / Livre</span>
+            </div>
+            <a href="caca_palavras_EleMAQ_V3.html" class="btn-play">
+                Jogar Agora <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="game-card">
+            <span class="tag-status standard">Modo Livre</span>
+            <h3>Elementos de Máquinas</h3>
+            <p>Versão clássica com resposta livre. Busca de palavras liberada diretamente na grade de letras desde o início.</p>
+            <div class="card-stats">
+                <span><i class="fa-solid fa-circle-question"></i> 20 Perguntas</span>
+                <span><i class="fa-solid fa-unlock"></i> Sem Bloqueio</span>
+            </div>
+            <a href="caca_palavras_EleMAQ.html" class="btn-play">
+                Jogar Agora <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="game-card pneumatica">
+            <span class="tag-status pneumatic">Pneumática</span>
+            <h3>Atuadores e Válvulas V1</h3>
+            <p>Modo de aprendizado em pneumática industrial com modos de tempo, sistema de pontuação e estatísticas detalhadas.</p>
+            <div class="card-stats">
+                <span><i class="fa-solid fa-circle-question"></i> 15 Perguntas</span>
+                <span><i class="fa-solid fa-trophy"></i> Com Ranking</span>
+            </div>
+            <a href="caca_palavras_AtuaValvulas_V1.html" class="btn-play">
+                Jogar Agora <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="game-card pneumatica">
+            <span class="tag-status pneumatic">Pneumática</span>
+            <h3>Atuadores e Válvulas</h3>
+            <p>Desafio prático de busca rápida direcionado a componentes de circuitos pneumáticos e atuadores mecânicos.</p>
+            <div class="card-stats">
+                <span><i class="fa-solid fa-circle-question"></i> 15 Perguntas</span>
+                <span><i class="fa-solid fa-bolt"></i> Rápido</span>
+            </div>
+            <a href="caca_palavras_AtuaValvulas.html" class="btn-play">
+                Jogar Agora <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+    </section>
+
+    <h3 class="section-title"><i class="fa-solid fa-folder-tree"></i> Direcionamento de Arquivos</h3>
+
+    <section class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome do Arquivo</th>
+                    <th>Conteúdo / Módulo</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="file-name">caca_palavras_EleMAQ_V3.html</span></td>
+                    <td>Elementos de Máquinas — Versão Interativa V3</td>
+                    <td><a href="caca_palavras_EleMAQ_V3.html" class="table-link">Abrir <i class="fa-solid fa-arrow-up-right-from-square"></i></a></td>
+                </tr>
+                <tr>
+                    <td><span class="file-name">caca_palavras_EleMAQ.html</span></td>
+                    <td>Elementos de Máquinas — Versão Standard</td>
+                    <td><a href="caca_palavras_EleMAQ.html" class="table-link">Abrir <i class="fa-solid fa-arrow-up-right-from-square"></i></a></td>
+                </tr>
+                <tr>
+                    <td><span class="file-name">caca_palavras_AtuaValvulas_V1.html</span></td>
+                    <td>Atuadores e Válvulas Pneumáticas — Versão V1</td>
+                    <td><a href="caca_palavras_AtuaValvulas_V1.html" class="table-link">Abrir <i class="fa-solid fa-arrow-up-right-from-square"></i></a></td>
+                </tr>
+                <tr>
+                    <td><span class="file-name">caca_palavras_AtuaValvulas.html</span></td>
+                    <td>Atuadores e Válvulas Pneumáticas — Versão Standard</td>
+                    <td><a href="caca_palavras_AtuaValvulas.html" class="table-link">Abrir <i class="fa-solid fa-arrow-up-right-from-square"></i></a></td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+
+<footer>
+    <p>SENAI — Serviço Nacional de Aprendizagem Industrial</p>
+    <p>Portal de Recursos Educativos Interativos | Hospedado via GitHub Pages</p>
+</footer>
 
 </body>
 </html>
