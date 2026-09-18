@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Jogos Educativos — SENAI</title>
+    <!-- Font Awesome para Ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --senai-blue: #0046ad;
+            --senai-blue-dark: #003077;
+            --senai-red: #e30613;
+            --senai-light-blue: #075ed7;
+            --bg-color: #f4f7fb;
+            --card-bg: #ffffff;
+            --text-main: #1c2a38;
+            --text-muted: #5a6e85;
+            --border-radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+
+        /* HEADER */
+        header {
+            background: linear-gradient(135deg, var(--senai-blue-dark), var(--senai-blue));
+            color: white;
+            padding: 24px 30px;
+            box-shadow: 0 4px 20px rgba(0, 70, 173, 0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-senai {
+            background: var(--senai-red);
+            color: white;
+            padding: 6px 16px;
+            font-weight: 900;
+            font-style: italic;
+            font-size: 26px;
+            border-radius: 6px;
+            letter-spacing: 1.5px;
+            box-shadow: 0 2px 8px rgba(227, 6, 19, 0.3);
+        }
+
+        .brand-title h1 {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-title p {
+            font-size: 13px;
+            opacity: 0.85;
+        }
+
+        .header-badge {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 8px 16px;
+            border-radius: 30px;
+            backdrop-filter: blur(5px);
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* MAIN CONTENT */
+        main {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+            flex: 1;
+            width: 100%;
+        }
+
+        .hero-banner {
+            background: linear-gradient(135deg, #ffffff, #eef5ff);
+            border: 1px solid #dbe7f6;
+            border-radius: var(--border-radius);
+            padding: 32px;
+            margin-bottom: 35px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.03);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .hero-text h2 {
+            color: var(--senai-blue);
+            font-size: 26px;
+            margin-bottom: 10px;
+        }
+
+        .hero-text p {
+            color: var(--text-muted);
+            font-size: 15px;
+            max-width: 700px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            color: var(--senai-blue);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* CARDS GRID */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+            gap: 25px;
+            margin-bottom: 45px;
+        }
+
+        .game-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
+            border: 1px solid #eaf0f8;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: var(--senai-blue);
+        }
+
+        .game-card.featured::before {
+            background: var(--senai-red);
+        }
+
+        .game-card.pneumatica::before {
+            background: #10b981;
+        }
+
+        .game-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0, 70, 173, 0.1);
+        }
+
+        .tag-status {
+            align-self: flex-start;
+            padding: 4px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 15px;
+        }
+
+        .tag-status.recommended {
+            background: #ffebe9;
+            color: var(--senai-red);
+        }
+
+        .tag-status.standard {
+            background: #e8f1ff;
+            color: var(--senai-blue);
+        }
+
+        .tag-status.pneumatic {
+            background: #e6f7f0;
+            color: #059669;
+        }
+
+        .game-card h3 {
+            font-size: 18px;
+            color: var(--text-main);
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+
+        .game-card p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        .card-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            padding-top: 12px;
+            border-top: 1px dashed #e2e8f0;
+        }
+
+        .card-stats span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-play {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: var(--senai-light-blue);
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: background 0.2s;
+            text-align: center;
+        }
+
+        .btn-play:hover {
+            background: var(--senai-blue-dark);
+        }
+
+        /* TABLE SECTION */
+        .table-container {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
+            border: 1px solid #eaf0f8;
+            overflow: hidden;
+            margin-bottom: 40px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background: #f8fafc;
+            color: var(--text-muted);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        td {
+            padding: 18px 24px;
+            border-bottom: 1px solid #edf2f7;
+            font-size: 14px;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: #f8fbff;
+        }
+
+        .file-name {
+            font-family: monospace;
+            background: #f1f5f9;
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: var(--senai-blue);
+            font-weight: 600;
+        }
+
+        .table-link {
+            color: var(--senai-light-blue);
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .table-link:hover {
+            text-decoration: underline;
+        }
+
+        /* FOOTER */
+        footer {
+            background: #0f172a;
+            color: #94a3b8;
+            padding: 30px 20px;
+            text-align: center;
+            font-size: 13px;
+            margin-top: auto;
+        }
+
+        footer p {
+            margin-bottom: 8px;
+        }
+
+        footer a {
+            color: #cbd5e1;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .hero-banner {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .header-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-container">
+        <div class="brand">
+            <div class="logo-senai">SENAI</div>
+            <div class="brand-title">
+                <h1>Portal de Jogos Educativos</h1>
+                <p>Plataforma Interativa de Aprendizagem Técnica</p>
+            </div>
+        </div>
+        <div class="header-badge">
+            <i class="fa-solid fa-gamepad"></i> Caça-Palavras Interativos
+        </div>
+    </div>
+</header>
+
+<main>
+    <section class="hero-banner">
+        <div class="hero-text">
+            <h2>Bem-vindo ao Portal de Atividades</h2>
+            <p>Selecione um dos desafios interativos abaixo para praticar e fixar conceitos técnicos sobre Elementos de Máquinas, Atuadores Mecânicos e Válvulas Pneumáticas.</p>
+        </div>
+    </section>
+
+    <h3 class="section-title"><i class="fa-solid fa-layer-group"></i> Jogos Disponíveis</h3>
+
+    <section class="games-grid">
+        <!-- Card 1 -->
+        <div class="game-card featured">
+            <span class="tag-status recommended">Recomendado</span>
+            <h3>Elementos de Máquinas V3</h3>
+            <p>Versão completa com quiz bloqueante, temporizador ajustável, sistema de estatísticas e relatório final.</p>
+            <div class="card-stats">
+                <span><i class="fa-solid fa-circle-question"></i> 20 Perguntas</span>
+                <span><i class="fa-solid fa-clock"></i> 40 min / Livre</span>
+            </div>
+            <a href="caca_palavras_EleMAQ_V3.html" class="btn-play">
+                Jogar Agora <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="game-card">
+            <span class="tag-status standard">Modo Livre</span>
+            <h3>Elementos de Máquinas</h3>
+            <p>Versão clássica com resposta livre. Busca de palavras liberada diretamente na grade de letras desde o início.</p>
+            <div class="card-stats">
+                <span><i class="fa-solid fa-circle-question"></i> 20 Perguntas</span>
+                <span><i class="fa-solid fa-unlock"></i> Sem Bloqueio</span>
+            </div>
+            <a href="caca_palavras_EleMAQ.html" class="btn-play">
+                Jogar Agora <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="game-card pneumatica">
+            <span class="tag-status pneumatic">Pneumática</span>
+            <h3>Atuadores e Válvulas V1</h3>
+            <p>Modo de aprendizado em pneumática industrial com modos de tempo, sistema de pontuação e estatísticas detalhadas.</p>
+            <div class="card-stats">
+                <span><i class="fa-solid fa-circle-question"></i> 15 Perguntas</span>
+                <span><i class="fa-solid fa-trophy"></i> Com Ranking</span>
+            </div>
+            <a href="caca_palavras_AtuaValvulas_V1.html" class="btn-play">
+                Jogar Agora <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="game-card pneumatica">
+            <span class="tag-status pneumatic">Pneumática</span>
+            <h3>Atuadores e Válvulas</h3>
+            <p>Desafio prático de busca rápida direcionado a componentes de circuitos pneumáticos e atuadores mecânicos.</p>
+            <div class="card-stats">
+                <span><i class="fa-solid fa-circle-question"></i> 15 Perguntas</span>
+                <span><i class="fa-solid fa-bolt"></i> Rápido</span>
+            </div>
+            <a href="caca_palavras_AtuaValvulas.html" class="btn-play">
+                Jogar Agora <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+    </section>
+
+    <h3 class="section-title"><i class="fa-solid fa-folder-tree"></i> Direcionamento de Arquivos</h3>
+
+    <section class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome do Arquivo</th>
+                    <th>Conteúdo / Módulo</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="file-name">caca_palavras_EleMAQ_V3.html</span></td>
+                    <td>Elementos de Máquinas — Versão Interativa V3</td>
+                    <td><a href="caca_palavras_EleMAQ_V3.html" class="table-link">Abrir <i class="fa-solid fa-arrow-up-right-from-square"></i></a></td>
+                </tr>
+                <tr>
+                    <td><span class="file-name">caca_palavras_EleMAQ.html</span></td>
+                    <td>Elementos de Máquinas — Versão Standard</td>
+                    <td><a href="caca_palavras_EleMAQ.html" class="table-link">Abrir <i class="fa-solid fa-arrow-up-right-from-square"></i></a></td>
+                </tr>
+                <tr>
+                    <td><span class="file-name">caca_palavras_AtuaValvulas_V1.html</span></td>
+                    <td>Atuadores e Válvulas Pneumáticas — Versão V1</td>
+                    <td><a href="caca_palavras_AtuaValvulas_V1.html" class="table-link">Abrir <i class="fa-solid fa-arrow-up-right-from-square"></i></a></td>
+                </tr>
+                <tr>
+                    <td><span class="file-name">caca_palavras_AtuaValvulas.html</span></td>
+                    <td>Atuadores e Válvulas Pneumáticas — Versão Standard</td>
+                    <td><a href="caca_palavras_AtuaValvulas.html" class="table-link">Abrir <i class="fa-solid fa-arrow-up-right-from-square"></i></a></td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+
+<footer>
+    <p>SENAI — Serviço Nacional de Aprendizagem Industrial</p>
+    <p>Portal de Recursos Educativos Interativos | Hospedado via GitHub Pages</p>
+</footer>
+
+</body>
+</html>
