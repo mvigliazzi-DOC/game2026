@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>O Leilão do Tempo - Edição Dinâmica</title>
+  <title>O Leilão do Tempo - Edição Dinâmica com Reconexão</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -59,6 +59,11 @@
   <!-- TELA PRINCIPAL DO JOGO -->
   <div id="screen-game" class="hidden flex-1 flex flex-col max-w-6xl w-full mx-auto p-4 space-y-4">
     
+    <!-- BANNER DE RECONEXÃO -->
+    <div id="reconnect-banner" class="hidden bg-amber-500/20 border border-amber-500/40 text-amber-300 px-4 py-2 rounded-xl text-xs font-bold text-center animate-pulse">
+      ⚠️ Conexão oscilando... Tentando reconectar à sala...
+    </div>
+
     <!-- CABEÇALHO DA SALA -->
     <header class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-wrap justify-between items-center gap-4">
       <div>
@@ -90,9 +95,15 @@
         
         <!-- PAINEL EXCLUSIVO DO LEILOEIRO -->
         <div id="leiloeiro-panel" class="hidden bg-slate-800 border border-amber-500/40 rounded-xl p-4 space-y-3">
-          <h3 class="font-bold text-amber-400 text-sm uppercase tracking-wider">Controle do Leiloeiro</h3>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div>
+          <div class="flex justify-between items-center">
+            <h3 class="font-bold text-amber-400 text-sm uppercase tracking-wider">Controle do Leiloeiro</h3>
+            <button onclick="encerrarLeilao()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition shadow">
+              🏁 Encerrar Leilão & Ver Ranking
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div class="md:col-span-2">
               <label class="block text-xs text-slate-400 mb-1">Selecione o Lote</label>
               <select id="select-item" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200">
                 <option value="Passar no Vestibular / Carreira|4">🎓 Passar no Vestibular / Carreira (Mín: 4)</option>
@@ -103,20 +114,25 @@
                 <option value="Hobby / Habilidade Extra|2">🎨 Hobby / Habilidade Extra (Mín: 2)</option>
               </select>
             </div>
+
             <div>
-              <label class="block text-xs text-slate-400 mb-1">Modalidade do Leilão</label>
+              <label class="block text-xs text-slate-400 mb-1">Modalidade</label>
               <select id="select-mode" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200">
-                <option value="TRADICIONAL">⚡ Leilão Tradicional (Cronômetro 30s)</option>
-                <option value="CEGO">🙈 Leilão Cego (Oferta Secreta em 20s)</option>
-                <option value="HOLANDES">📉 Leilão Holandês (Preço Decrescente)</option>
+                <option value="TRADICIONAL">⚡ Tradicional</option>
+                <option value="CEGO">🙈 Leilão Cego</option>
+                <option value="HOLANDES">📉 Leilão Holandês</option>
               </select>
             </div>
-            <div class="flex items-end gap-2">
-              <button onclick="iniciarLote()" class="w-full bg-emerald-600 hover:bg-emerald-700 font-bold py-2 px-3 rounded-lg text-sm transition">
-                Abrir Lote
-              </button>
+
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Tempo (s)</label>
+              <input type="number" id="input-duration" value="30" min="5" max="120" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-amber-400 font-bold text-center">
             </div>
           </div>
+
+          <button onclick="iniciarLote()" class="w-full bg-emerald-600 hover:bg-emerald-700 font-bold py-2 px-3 rounded-lg text-sm transition">
+            🚀 Abrir Novo Lote
+          </button>
         </div>
 
         <!-- CARTA DE EVENTO SURPRESA -->
@@ -209,8 +225,26 @@
     </div>
   </div>
 
+  <!-- MODAL DE RANKING FINAL -->
+  <div id="modal-ranking" class="fixed inset-0 bg-slate-950/90 modal-blur hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-800 border border-amber-500/50 p-6 rounded-2xl shadow-2xl max-w-lg w-full space-y-6">
+      <div class="text-center space-y-1">
+        <div class="text-4xl">🏆</div>
+        <h2 class="text-2xl font-black text-amber-400">Classificação Final</h2>
+        <p class="text-xs text-slate-400">Resultado do Leilão do Tempo</p>
+      </div>
+
+      <div id="ranking-list" class="space-y-3 max-h-[350px] overflow-y-auto pr-1">
+        <!-- Preenchido via JS -->
+      </div>
+
+      <button onclick="limparSessaoEReload()" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 rounded-lg transition shadow-lg">
+        🔄 Voltar ao Início
+      </button>
+    </div>
+  </div>
+
   <script>
-    // LISTA DE EVENTOS DA VIDA REAL
     const BANCO_EVENTOS = [
       { titulo: "⚡ Semana de Provas", desc: "Este lote concede +50% de valor no resultado final!", bonus: "VALOR_NO_FIM" },
       { titulo: "🎟️ Cupom de Desconto", desc: "O arrematante receberá 1 ficha de volta!", bonus: "CASHBACK" },
@@ -218,13 +252,12 @@
       { titulo: "🎁 Bônus de Produtividade", desc: "O vencedor ganha 2 fichas extras para a próxima rodada!", bonus: "BONUS_FICHAS" }
     ];
 
-    // ESTADO DO JOGO
     let peer = null;
-    let connections = [];
+    let connections = {}; // Mapeamento { playerUuid: conn }
     let hostConn = null;
     let isHost = false;
     let myName = "";
-    let myPeerId = "";
+    let myUuid = "";
     let roomToken = "";
     let myFichas = 16;
     let timerInterval = null;
@@ -232,37 +265,74 @@
     let gameState = {
       itemAtual: null,
       minFichas: 0,
-      modo: "TRADICIONAL", // TRADICIONAL, CEGO, HOLANDES
+      modo: "TRADICIONAL",
       tempoRestante: 30,
       eventoAtual: null,
       precoHolandesAtual: 0,
+      finalizado: false,
       lances: {},
-      apostas: {}, // { peerIdApostador: peerIdAlvo }
-      jogadores: {}
+      apostas: {},
+      jogadores: {} // { playerUuid: { nome, fichasRestantes, inventario: [], eHost, online: true } }
     };
 
-    function initPeer(id = null) {
+    // INICIALIZAÇÃO COM RECUPERAÇÃO DE SESSÃO
+    window.onload = () => {
+      // Cria ou recupera o ID persistente do navegador
+      myUuid = localStorage.getItem('lt_user_uuid');
+      if (!myUuid) {
+        myUuid = 'usr_' + Math.random().toString(36).substring(2, 11);
+        localStorage.setItem('lt_user_uuid', myUuid);
+      }
+
+      // Auto-reconexão se houver dados salvos
+      const savedToken = localStorage.getItem('lt_room_token');
+      const savedName = localStorage.getItem('lt_user_name');
+      const savedIsHost = localStorage.getItem('lt_is_host') === 'true';
+
+      if (savedToken && savedName) {
+        document.getElementById('input-name').value = savedName;
+        document.getElementById('input-token').value = savedToken;
+        
+        if (savedIsHost) {
+          criarSala(true);
+        } else {
+          entrarSala(true);
+        }
+      }
+    };
+
+    function initPeer(customPeerId = null) {
       return new Promise((resolve) => {
-        peer = id ? new Peer(id) : new Peer();
-        peer.on('open', (peerId) => {
-          myPeerId = peerId;
-          resolve(peerId);
-        });
+        peer = customPeerId ? new Peer(customPeerId) : new Peer();
+        peer.on('open', () => resolve(peer.id));
 
         peer.on('connection', (conn) => {
           if (isHost) setupHostConnection(conn);
         });
+
+        peer.on('error', (err) => {
+          console.warn("PeerJS erro:", err);
+          document.getElementById('reconnect-banner').classList.remove('hidden');
+        });
       });
     }
 
-    async function criarSala() {
+    // AÇÕES DO HOST (LEILOEIRO)
+    async function criarSala(isAutoReconnect = false) {
       myName = document.getElementById('input-name').value.trim() || 'Leiloeiro';
       isHost = true;
-      const id = 'leilao-tempo-' + Math.random().toString(36).substring(2, 8);
-      await initPeer(id);
       
-      roomToken = id;
-      gameState.jogadores[myPeerId] = { nome: myName, fichasRestantes: 16, eHost: true };
+      const hostPeerId = isAutoReconnect ? localStorage.getItem('lt_room_token') : 'leilao-tempo-' + Math.random().toString(36).substring(2, 8);
+      await initPeer(hostPeerId);
+
+      roomToken = hostPeerId;
+      localStorage.setItem('lt_room_token', roomToken);
+      localStorage.setItem('lt_user_name', myName);
+      localStorage.setItem('lt_is_host', 'true');
+
+      if (!gameState.jogadores[myUuid]) {
+        gameState.jogadores[myUuid] = { nome: myName, fichasRestantes: 16, inventario: [], eHost: true, online: true };
+      }
 
       document.getElementById('role-badge').innerText = 'Leiloeiro';
       document.getElementById('role-badge').className = 'px-2.5 py-1 text-xs font-bold rounded-full bg-amber-500 text-slate-950';
@@ -274,39 +344,55 @@
     }
 
     function setupHostConnection(conn) {
-      connections.push(conn);
       conn.on('data', (data) => handleHostData(data, conn));
+
       conn.on('close', () => {
-        delete gameState.jogadores[conn.peer];
+        // Encontra qual jogador caiu e marca como offline sem apagar dados
+        Object.entries(connections).forEach(([uuid, c]) => {
+          if (c === conn) {
+            if (gameState.jogadores[uuid]) gameState.jogadores[uuid].online = false;
+            delete connections[uuid];
+          }
+        });
         broadcastGameState();
       });
     }
 
     function handleHostData(data, conn) {
       if (data.type === 'JOIN') {
-        gameState.jogadores[conn.peer] = { nome: data.nome, fichasRestantes: 16, eHost: false };
+        const pUuid = data.uuid;
+        connections[pUuid] = conn;
+
+        // SE JÁ EXISTIA: RECONECTA E MANTÉM OS DADOS
+        if (gameState.jogadores[pUuid]) {
+          gameState.jogadores[pUuid].online = true;
+          gameState.jogadores[pUuid].nome = data.nome; // Atualiza nome se mudou
+        } else {
+          // NOVO JOGADOR
+          gameState.jogadores[pUuid] = { nome: data.nome, fichasRestantes: 16, inventario: [], eHost: false, online: true };
+        }
+
         broadcastGameState();
       }
 
       if (data.type === 'BID') {
-        if (!gameState.itemAtual) return;
+        if (!gameState.itemAtual || gameState.finalizado) return;
 
-        // Bônus Overtime no Leilão Tradicional: +5s nos últimos 5s
         if (gameState.modo === 'TRADICIONAL' && gameState.tempoRestante <= 5) {
           gameState.tempoRestante += 5;
         }
 
-        gameState.lances[conn.peer] = {
-          nome: gameState.jogadores[conn.peer].nome,
+        gameState.lances[data.uuid] = {
+          nome: gameState.jogadores[data.uuid].nome,
           fichas: data.fichas
         };
         broadcastGameState();
       }
 
       if (data.type === 'BUY_HOLANDES') {
-        if (gameState.modo === 'HOLANDES' && gameState.itemAtual) {
-          gameState.lances[conn.peer] = {
-            nome: gameState.jogadores[conn.peer].nome,
+        if (gameState.modo === 'HOLANDES' && gameState.itemAtual && !gameState.finalizado) {
+          gameState.lances[data.uuid] = {
+            nome: gameState.jogadores[data.uuid].nome,
             fichas: gameState.precoHolandesAtual
           };
           encerrarLote();
@@ -314,39 +400,37 @@
       }
 
       if (data.type === 'BET') {
-        gameState.apostas[conn.peer] = data.targetPeerId;
+        gameState.apostas[data.uuid] = data.targetUuid;
         broadcastGameState();
       }
     }
 
     function broadcastGameState() {
-      connections.forEach(conn => {
-        if (conn.open) conn.send({ type: 'STATE_UPDATE', state: gameState });
+      Object.values(connections).forEach(conn => {
+        if (conn && conn.open) conn.send({ type: 'STATE_UPDATE', state: gameState });
       });
       renderUI();
     }
 
-    // CONTROLE DO TIMER E MODALIDADES NO HOST
+    // CONTROLE DE LOTE
     function iniciarLote() {
+      if (gameState.finalizado) return;
+
       const select = document.getElementById('select-item').value;
       const [nome, min] = select.split('|');
+      const tempoDefinido = parseInt(document.getElementById('input-duration').value) || 30;
       
       gameState.itemAtual = nome;
       gameState.minFichas = parseInt(min);
       gameState.modo = document.getElementById('select-mode').value;
+      gameState.tempoRestante = tempoDefinido;
       gameState.lances = {};
       gameState.apostas = {};
       
-      // Sorteio de Evento Surpresa
       gameState.eventoAtual = BANCO_EVENTOS[Math.floor(Math.random() * BANCO_EVENTOS.length)];
 
       if (gameState.modo === 'HOLANDES') {
         gameState.precoHolandesAtual = gameState.minFichas + 6;
-        gameState.tempoRestante = 25;
-      } else if (gameState.modo === 'CEGO') {
-        gameState.tempoRestante = 20;
-      } else {
-        gameState.tempoRestante = 30;
       }
 
       clearInterval(timerInterval);
@@ -356,7 +440,7 @@
     }
 
     function executarTimerHost() {
-      if (!gameState.itemAtual) return;
+      if (!gameState.itemAtual || gameState.finalizado) return;
 
       gameState.tempoRestante--;
 
@@ -376,35 +460,33 @@
       clearInterval(timerInterval);
       if (!gameState.itemAtual) return;
 
-      let vencedorId = null;
+      let vencedorUuid = null;
       let maiorLance = -1;
 
-      Object.entries(gameState.lances).forEach(([peerId, data]) => {
+      Object.entries(gameState.lances).forEach(([uuid, data]) => {
         if (data.fichas > maiorLance) {
           maiorLance = data.fichas;
-          vencedorId = peerId;
+          vencedorUuid = uuid;
         }
       });
 
-      if (vencedorId && gameState.jogadores[vencedorId]) {
+      if (vencedorUuid && gameState.jogadores[vencedorUuid]) {
         let custoFinal = maiorLance;
         if (gameState.eventoAtual && gameState.eventoAtual.bonus === 'CASHBACK') custoFinal = Math.max(0, custoFinal - 1);
 
-        gameState.jogadores[vencedorId].fichasRestantes -= custoFinal;
+        gameState.jogadores[vencedorUuid].fichasRestantes -= custoFinal;
+        gameState.jogadores[vencedorUuid].inventario.push(gameState.itemAtual);
 
-        connections.forEach(conn => {
-          if (conn.peer === vencedorId) {
-            conn.send({ type: 'WIN_ITEM', fichasGastas: custoFinal, item: gameState.itemAtual });
-          }
-        });
+        const connVencedor = connections[vencedorUuid];
+        if (connVencedor && connVencedor.open) {
+          connVencedor.send({ type: 'WIN_ITEM', fichasGastas: custoFinal, item: gameState.itemAtual });
+        }
 
-        // Resolve Apostas dos Espectadores
-        Object.entries(gameState.apostas).forEach(([apostadorId, alvoId]) => {
-          if (alvoId === vencedorId && gameState.jogadores[apostadorId]) {
-            gameState.jogadores[apostadorId].fichasRestantes += 1;
-            connections.forEach(conn => {
-              if (conn.peer === apostadorId) conn.send({ type: 'BET_WIN' });
-            });
+        Object.entries(gameState.apostas).forEach(([apostadorUuid, alvoUuid]) => {
+          if (alvoUuid === vencedorUuid && gameState.jogadores[apostadorUuid]) {
+            gameState.jogadores[apostadorUuid].fichasRestantes += 1;
+            const cApostador = connections[apostadorUuid];
+            if (cApostador && cApostador.open) cApostador.send({ type: 'BET_WIN' });
           }
         });
       }
@@ -415,18 +497,36 @@
       broadcastGameState();
     }
 
-    // AÇÕES DO CLIENTE
-    async function entrarSala() {
+    function encerrarLeilao() {
+      if (!confirm("Tem certeza de que deseja encerrar o leilão e exibir o ranking final?")) return;
+      clearInterval(timerInterval);
+      gameState.finalizado = true;
+      gameState.itemAtual = null;
+      broadcastGameState();
+    }
+
+    // AÇÕES DO JOGADOR (CLIENT)
+    async function entrarSala(isAutoReconnect = false) {
       myName = document.getElementById('input-name').value.trim() || 'Jogador';
       roomToken = document.getElementById('input-token').value.trim();
 
       if (!roomToken) return alert("Informe o Token da Sala!");
 
+      localStorage.setItem('lt_room_token', roomToken);
+      localStorage.setItem('lt_user_name', myName);
+      localStorage.setItem('lt_is_host', 'false');
+
       await initPeer();
-      hostConn = peer.connect(roomToken);
+      conectarAoHost();
+    }
+
+    function conectarAoHost() {
+      hostConn = peer.connect(roomToken, { reliable: true });
 
       hostConn.on('open', () => {
-        hostConn.send({ type: 'JOIN', nome: myName });
+        document.getElementById('reconnect-banner').classList.add('hidden');
+        hostConn.send({ type: 'JOIN', nome: myName, uuid: myUuid });
+        
         document.getElementById('role-badge').innerText = 'Jogador';
         document.getElementById('role-badge').className = 'px-2.5 py-1 text-xs font-bold rounded-full bg-blue-500 text-white';
         renderUI();
@@ -436,18 +536,25 @@
       hostConn.on('data', (data) => {
         if (data.type === 'STATE_UPDATE') {
           gameState = data.state;
+          // Atualiza fichas locais do estado vindo do Host
+          if (gameState.jogadores[myUuid]) {
+            myFichas = gameState.jogadores[myUuid].fichasRestantes;
+            document.getElementById('player-fichas').innerText = myFichas;
+          }
           renderUI();
         }
         if (data.type === 'WIN_ITEM') {
-          myFichas -= data.fichasGastas;
-          document.getElementById('player-fichas').innerText = myFichas;
           alert(`🎉 Parabéns! Você arrematou "${data.item}" por ${data.fichasGastas} fichas!`);
         }
         if (data.type === 'BET_WIN') {
-          myFichas += 1;
-          document.getElementById('player-fichas').innerText = myFichas;
           alert(`🎲 Você acertou sua aposta e ganhou +1 ficha bônus!`);
         }
+      });
+
+      hostConn.on('close', () => {
+        document.getElementById('reconnect-banner').classList.remove('hidden');
+        // Tenta reconectar a cada 3 segundos em caso de queda
+        setTimeout(conectarAoHost, 3000);
       });
     }
 
@@ -459,19 +566,19 @@
       if (fichas > myFichas) return alert("Fichas insuficientes!");
       if (fichas < gameState.minFichas) return alert(`Lance mínimo é de ${gameState.minFichas} fichas.`);
 
-      hostConn.send({ type: 'BID', fichas: fichas });
+      hostConn.send({ type: 'BID', fichas: fichas, uuid: myUuid });
       input.value = '';
     }
 
     function comprarHolandes() {
       if (myFichas < gameState.precoHolandesAtual) return alert("Fichas insuficientes!");
-      hostConn.send({ type: 'BUY_HOLANDES' });
+      hostConn.send({ type: 'BUY_HOLANDES', uuid: myUuid });
     }
 
     function fazerAposta() {
       const target = document.getElementById('select-bet-player').value;
       if (!target) return;
-      hostConn.send({ type: 'BET', targetPeerId: target });
+      hostConn.send({ type: 'BET', targetUuid: target, uuid: myUuid });
       document.getElementById('my-bet-display').innerText = "Aposta registrada com sucesso!";
       document.getElementById('my-bet-display').classList.remove('hidden');
     }
@@ -481,7 +588,12 @@
       document.getElementById('user-display-name').innerText = myName;
       document.getElementById('room-token-display').innerText = roomToken || '---';
 
-      // Cronômetro
+      if (gameState.finalizado) {
+        exibirRanking();
+        return;
+      }
+
+      // Timer
       const timerEl = document.getElementById('timer-display');
       timerEl.innerText = `00:${gameState.tempoRestante < 10 ? '0' : ''}${gameState.tempoRestante}`;
       if (gameState.tempoRestante <= 5) timerEl.classList.add('text-red-500', 'pulse-timer');
@@ -497,13 +609,12 @@
         document.getElementById('lote-min-badge').innerText = 'Lance Mínimo: -';
       }
 
-      // Evento Surpresa
       if (gameState.eventoAtual) {
         document.getElementById('event-title').innerText = gameState.eventoAtual.titulo;
         document.getElementById('event-desc').innerText = gameState.eventoAtual.desc;
       }
 
-      // Render de Lances e Controles
+      // Lances
       const stdControls = document.getElementById('standard-bid-controls');
       const holandesBtn = document.getElementById('btn-buy-holandes');
 
@@ -537,37 +648,80 @@
         }
       }
 
-      // Atualiza Lista de Jogadores e Seleção de Apostas
+      // Lista de Jogadores e Apostas
       const listEl = document.getElementById('players-list');
       const betSelect = document.getElementById('select-bet-player');
       listEl.innerHTML = '';
       betSelect.innerHTML = '<option value="">Selecione um jogador...</option>';
 
-      const jogadoresArr = Object.values(gameState.jogadores);
-      document.getElementById('player-count').innerText = jogadoresArr.length;
+      const jogadoresEntries = Object.entries(gameState.jogadores);
+      document.getElementById('player-count').innerText = jogadoresEntries.filter(([_, j]) => !j.eHost).length;
 
-      jogadoresArr.forEach(j => {
+      jogadoresEntries.forEach(([uuid, j]) => {
         if (j.eHost) return;
         
         const div = document.createElement('div');
+        const statusBadge = j.online ? '' : '<span class="text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 px-1.5 py-0.5 rounded ml-2">Off-line</span>';
+        
         div.className = "bg-slate-900/60 border border-slate-700/50 p-3 rounded-lg flex justify-between items-center text-sm";
         div.innerHTML = `
-          <span class="font-bold text-slate-200">${j.nome}</span>
+          <div>
+            <div class="font-bold text-slate-200 flex items-center">${j.nome} ${statusBadge}</div>
+            <div class="text-xs text-slate-400">Arremates: ${j.inventario ? j.inventario.length : 0}</div>
+          </div>
           <span class="font-bold text-amber-400 bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded text-xs">
             🪙 ${j.fichasRestantes} fichas
           </span>
         `;
         listEl.appendChild(div);
 
-        // Preenche dropdown de aposta
-        if (j.nome !== myName) {
+        if (uuid !== myUuid && j.online) {
           const opt = document.createElement('option');
-          const peerKey = Object.keys(gameState.jogadores).find(k => gameState.jogadores[k] === j);
-          opt.value = peerKey;
+          opt.value = uuid;
           opt.innerText = j.nome;
           betSelect.appendChild(opt);
         }
       });
+    }
+
+    function exibirRanking() {
+      const modal = document.getElementById('modal-ranking');
+      const listEl = document.getElementById('ranking-list');
+      listEl.innerHTML = '';
+
+      const jogadoresOrdenados = Object.values(gameState.jogadores)
+        .filter(j => !j.eHost)
+        .sort((a, b) => {
+          const lotesA = a.inventario ? a.inventario.length : 0;
+          const lotesB = b.inventario ? b.inventario.length : 0;
+          if (lotesB !== lotesA) return lotesB - lotesA;
+          return b.fichasRestantes - a.fichasRestantes;
+        });
+
+      const medalhas = ['🥇', '🥈', '🥉'];
+
+      jogadoresOrdenados.forEach((j, index) => {
+        const div = document.createElement('div');
+        const pos = medalhas[index] || `#${index + 1}`;
+        const qtdLotes = j.inventario ? j.inventario.length : 0;
+
+        div.className = "bg-slate-900 border border-slate-700 p-4 rounded-xl flex items-center justify-between";
+        div.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="text-2xl font-black w-8 text-center">${pos}</span>
+            <div>
+              <div class="font-bold text-white text-base">${j.nome}</div>
+              <div class="text-xs text-slate-400">${qtdLotes} lote(s) arrematado(s)</div>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="text-amber-400 font-bold text-sm block">🪙 ${j.fichasRestantes} fichas</span>
+          </div>
+        `;
+        listEl.appendChild(div);
+      });
+
+      modal.classList.remove('hidden');
     }
 
     function trocarTela() {
@@ -578,6 +732,13 @@
     function copiarToken() {
       navigator.clipboard.writeText(roomToken);
       alert('Token da sala copiado!');
+    }
+
+    function limparSessaoEReload() {
+      localStorage.removeItem('lt_room_token');
+      localStorage.removeItem('lt_user_name');
+      localStorage.removeItem('lt_is_host');
+      location.reload();
     }
   </script>
 </body>
