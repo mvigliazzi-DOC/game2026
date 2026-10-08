@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Unificado: Ecossistema de Jogos Técnicos & Gestão Industrial</title>
+    <style>
+        :root {
+            --bg-main: #07090e;
+            --card-bg: rgba(18, 24, 38, 0.75);
+            --card-border: rgba(56, 189, 248, 0.15);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-cyan: #38bdf8;
+            --accent-blue: #2563eb;
+            --accent-green: #10b981;
+            --accent-purple: #a855f7;
+            --accent-amber: #f59e0b;
+            --accent-red: #ef4444;
+            --senai-red: #e30613;
+            --glow-cyan: rgba(56, 189, 248, 0.35);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(37, 99, 235, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(168, 85, 247, 0.1) 0%, transparent 40%),
+                linear-gradient(180deg, #07090e 0%, #0d1322 100%);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- CABEÇALHO --- */
+        header {
+            text-align: center;
+            max-width: 950px;
+            margin-bottom: 50px;
+            position: relative;
+        }
+
+        .brand-badge {
+            background: linear-gradient(135deg, var(--senai-red), #990000);
+            color: #fff;
+            font-weight: 900;
+            font-style: italic;
+            font-size: 1rem;
+            padding: 6px 18px;
+            border-radius: 6px;
+            display: inline-block;
+            letter-spacing: 1.5px;
+            box-shadow: 0 0 15px rgba(227, 6, 19, 0.4);
+            margin-bottom: 16px;
+        }
+
+        header h1 {
+            font-size: 2.8rem;
+            font-weight: 900;
+            line-height: 1.2;
+            margin-bottom: 14px;
+            background: linear-gradient(135deg, #ffffff 30%, var(--accent-cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.15rem;
+            line-height: 1.6;
+        }
+
+        /* --- FILTROS DE CATEGORIA --- */
+        .category-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 40px;
+            max-width: 1100px;
+        }
+
+        .filter-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-secondary);
+            padding: 10px 18px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            color: #fff;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 15px var(--glow-cyan);
+            background: rgba(56, 189, 248, 0.15);
+        }
+
+        /* --- GRID DE CARDS --- */
+        .hub-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 28px;
+            width: 100%;
+            max-width: 1280px;
+            margin-bottom: 50px;
+        }
+
+        .hub-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            backdrop-filter: blur(12px);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .hub-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 20px var(--glow-cyan);
+        }
+
+        /* Linha decorativa superior dos cards */
+        .hub-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-blue));
+        }
+
+        .card-quality::before { background: linear-gradient(90deg, var(--accent-purple), var(--accent-cyan)); }
+        .card-lean::before { background: linear-gradient(90deg, var(--accent-green), var(--accent-amber)); }
+        .card-maker::before { background: linear-gradient(90deg, var(--senai-red), var(--accent-amber)); }
+
+        .card-badge {
+            align-self: flex-start;
+            font-size: 0.75rem;
+            font-weight: 800;
+            padding: 5px 12px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--accent-cyan);
+        }
+
+        .card-title {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+
+        .card-description {
+            color: var(--text-secondary);
+            font-size: 0.93rem;
+            line-height: 1.55;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        .feature-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 22px;
+        }
+
+        .tag-pill {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #cbd5e1;
+            font-size: 0.75rem;
+            padding: 4px 9px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .btn-action {
+            display: block;
+            width: 100%;
+            text-align: center;
+            background: linear-gradient(135deg, var(--accent-blue), #1d4ed8);
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 0.95rem;
+            padding: 13px;
+            border-radius: 10px;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-action:hover {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+            box-shadow: 0 0 20px var(--glow-cyan);
+            color: #07090e;
+        }
+
+        /* --- RODAPÉ --- */
+        footer {
+            margin-top: auto;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.88rem;
+            border-top: 1px solid var(--card-border);
+            padding-top: 25px;
+            width: 100%;
+            max-width: 1280px;
+        }
+
+        @media (max-width: 768px) {
+            header h1 { font-size: 2rem; }
+            .hub-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <span class="brand-badge">SENAI</span>
+        <h1>Ecossistema de Simulação & Jogos Industriais</h1>
+        <p>Acesse o catálogo completo de portais, hubs e simuladores interativos para Engenharia, Automação, Manutenção e Gestão Operacional.</p>
+    </header>
+
+    <!-- HUB DE CARDS INTEGRADO -->
+    <main class="hub-grid">
+
+        <!-- CARD 1: Portal SISMEC Principal -->
+        <article class="hub-card">
+            <div>
+                <span class="card-badge">🌐 Portal de Jogos (9 Módulos)</span>
+                <h2 class="card-title">Missão Engenharia (SISMEC)</h2>
+                <p class="card-description">
+                    Portal principal de integração cobrindo o circuito completo de desafios em automação, processos de fabricação, pneumática, hidráulica e elementos de máquinas[cite: 4].
+                </p>
+                <div class="feature-tags">
+                    <span class="tag-pill">Caça-Palavras</span>
+                    <span class="tag-pill">Pneumática & Hidráulica</span>
+                    <span class="tag-pill">Drag & Drop</span>
+                    <span class="tag-pill">Processos de Fabricação</span>
+                </div>
+            </div>
+            <a href="index SISMEC.html" class="btn-action">Acessar Portal SISMEC ➔</a>
+        </article>
+
+        <!-- CARD 2: Expert em Manutenção (Novo Executável) -->
+        <article class="hub-card card-maker">
+            <div>
+                <span class="card-badge">⚙️ Tabuleiro P2P & Multi-Modos</span>
+                <h2 class="card-title">Expert em Manutenção V02</h2>
+                <p class="card-description">
+                    Simulador avançado com 50 questões técnicas cobrindo transmissões mecânicas, redutores, motores elétricos, NR-10/NR-12, loja de ferramentas e áudio sintetizado[cite: 5].
+                </p>
+                <div class="feature-tags">
+                    <span class="tag-pill">Speedrun & Cooperativo</span>
+                    <span class="tag-pill">Redutores & Motores</span>
+                    <span class="tag-pill">Loja de Ferramentas</span>
+                    <span class="tag-pill">Rede P2P PeerJS</span>
+                </div>
+            </div>
+            <a href="GAME_Manutencao_Transmissoes_ Mecanicas_Maquinas Eletricas_V02.html" class="btn-action">Iniciar Expert em Manutenção ➔</a>
+        </article>
+
+        <!-- CARD 3: Index Maker (CAD/CAM & Usinagem) -->
+        <article class="hub-card">
+            <div>
+                <span class="card-badge">🛠️ Usinagem & CNC</span>
+                <h2 class="card-title">Portal Desafio Maker</h2>
+                <p class="card-description">
+                    Ambiente focado no circuito do chão de fábrica: do projeto CAD/CAM aos parâmetros de corte, metrologia, GD&T e programação ISO CNC[cite: 6].
+                </p>
+                <div class="feature-tags">
+                    <span class="tag-pill">Programação CNC</span>
+                    <span class="tag-pill">Metrologia</span>
+                    <span class="tag-pill">CAD/CAM</span>
+                    <span class="tag-pill">Pressão Extrema</span>
+                </div>
+            </div>
+            <a href="index_Maker.html" class="btn-action">Acessar Portal Maker ➔</a>
+        </article>
+
+        <!-- CARD 4: Index Qualidade & Lean -->
+        <article class="hub-card card-quality">
+            <div>
+                <span class="card-badge">📈 Gestão Empresarial & Lean</span>
+                <h2 class="card-title">Hub Gestão & Qualidade</h2>
+                <p class="card-description">
+                    Portal concentrador de simuladores para Engenharia de Produção, integrando Leilão do Tempo, Desafio do CEO, Balanceamento GBO e Ferramentas da Qualidade[cite: 8].
+                </p>
+                <div class="feature-tags">
+                    <span class="tag-pill">Desafio da Qualidade</span>
+                    <span class="tag-pill">Leiloeiro Digital</span>
+                    <span class="tag-pill">Mundo Lean 8D</span>
+                    <span class="tag-pill">Balanceamento GBO</span>
+                </div>
+            </div>
+            <a href="index_qualidade.html" class="btn-action">Acessar Hub Qualidade ➔</a>
+        </article>
+
+        <!-- CARD 5: Desafio Automação Hidráulica -->
+        <article class="hub-card">
+            <div>
+                <span class="card-badge">💧 Associação & Drag & Drop</span>
+                <h2 class="card-title">Automação Hidráulica Industrial</h2>
+                <p class="card-description">
+                    Desafio prático de associação entre cenários técnicos, leis da física hidráulica, tipos de bombas e válvulas às suas soluções de engenharia[cite: 4].
+                </p>
+                <div class="feature-tags">
+                    <span class="tag-pill">40 Questões Técnicas</span>
+                    <span class="tag-pill">Modo Takt Time</span>
+                    <span class="tag-pill">Corrida P2P</span>
+                </div>
+            </div>
+            <a href="Desafio_Automacao_Hidraulica_Industrial.html" class="btn-action">Iniciar Hidráulica ➔</a>
+        </article>
+
+        <!-- CARD 6: Gestão da Qualidade Drag & Drop -->
+        <article class="hub-card card-quality">
+            <div>
+                <span class="card-badge">🧩 Resolução de Problemas</span>
+                <h2 class="card-title">Desafio SENAI: Gestão da Qualidade</h2>
+                <p class="card-description">
+                    Associe gargalos e falhas operacionais da linha às ferramentas da qualidade ideais (Pareto, Ishikawa, 5S, FMEA, SMED e JIT)[cite: 8].
+                </p>
+                <div class="feature-tags">
+                    <span class="tag-pill">20 Desafios Reais</span>
+                    <span class="tag-pill">Feedback Contextual</span>
+                    <span class="tag-pill">Módulos Acadêmicos</span>
+                </div>
+            </div>
+            <a href="Desafio_Gestao_Qualidade_Rede.html" class="btn-action">Iniciar Arraste da Qualidade ➔</a>
+        </article>
+
+        <!-- CARD 7: Balanceamento de Linha GBO -->
+        <article class="hub-card card-lean">
+            <div>
+                <span class="card-badge">📊 Engenharia de Operações</span>
+                <h2 class="card-title">Jogo de Balanceamento GBO</h2>
+                <p class="card-description">
+                    Simulador gerencial para equacionar 12 postos de trabalho fabris mantendo os tempos de ciclo dentro da margem permitida de ±15%[cite: 8].
+                </p>
+                <div class="feature-tags">
+                    <span class="tag-pill">Gráfico SVG Dinâmico</span>
+                    <span class="tag-pill">12 Postos Industriais</span>
+                    <span class="tag-pill">Layout Responsivo</span>
+                </div>
+            </div>
+            <a href="jogo_gbo_v1.0_responsivo.html" class="btn-action">Iniciar Balanceamento GBO ➔</a>
+        </article>
+
+        <!-- CARD 8: O Leilão do Tempo -->
+        <article class="hub-card card-lean">
+            <div>
+                <span class="card-badge">⏳ Trade-offs & Decisão</span>
+                <h2 class="card-title">O Leilão do Tempo (Leiloeiro Digital)</h2>
+                <p class="card-description">
+                    Simulação P2P interativa em tempo real sobre gestão do tempo, custo de oportunidade e priorização entre carreira, estudos e vida pessoal[cite: 8].
+                </p>
+                <div class="feature-tags">
+                    <span class="tag-pill">Leilão Tradicional & Holandês</span>
+                    <span class="tag-pill">Cartas de Evento</span>
+                    <span class="tag-pill">Multiplayer PeerJS</span>
+                </div>
+            </div>
+            <a href="Game_Leiloeiro_Digital_Rede.html" class="btn-action">Entrar no Leilão ➔</a>
+        </article>
+
+    </main>
+
+    <footer>
+        <p>Plataforma Integrada de Jogos & Simulações Educativas &copy; SENAI — Todos os direitos reservados.</p>
+    </footer>
+
+</body>
+</html>
