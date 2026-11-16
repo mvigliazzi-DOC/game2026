@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parâmetros de Usinagem: Cálculo de Avanço e Rugosidade Superficial (Ra e Rt/Rz)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Grade técnica de engenharia */
+        .cad-grid {
+            background-size: 20px 20px;
+            background-image: 
+                linear-gradient(to right, rgba(148, 163, 184, 0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(148, 163, 184, 0.1) 1px, transparent 1px);
+        }
+        /* Frações matemáticas limpas sem dependência externa */
+        .math-frac {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            vertical-align: middle;
+            margin: 0 0.25rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .math-num {
+            border-bottom: 1.5px solid currentColor;
+            padding: 0 0.35rem 0.15rem 0.35rem;
+            line-height: 1.2;
+        }
+        .math-den {
+            padding: 0.15rem 0.35rem 0 0.35rem;
+            line-height: 1.2;
+        }
+        /* Scrollbar discreta */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col selection:bg-blue-600 selection:text-white">
+
+    <!-- Cabeçalho Técnico Fixo -->
+    <header class="bg-slate-900 text-white border-b border-slate-800 shadow-lg sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 shrink-0">
+                    <!-- Ícone Técnico Inserto / Perfil de Rugosidade -->
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 17c2.5 0 2.5-5 5-5s2.5 5 5 5 2.5-5 5-5 2.5 5 3 5M4 7h16M7 4v6m10-6v6"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <h1 class="text-base sm:text-lg font-bold tracking-tight text-white">Cálculo de Avanço (<span class="font-mono text-blue-400">v<sub>f</sub></span>) e Rugosidade (<span class="font-mono text-emerald-400">R<sub>a</sub></span> / <span class="font-mono text-amber-400">R<sub>t</sub></span>)</h1>
+                        <span class="px-2 py-0.5 text-[10px] font-mono font-semibold bg-slate-800 text-slate-300 border border-slate-700 rounded">ISO 4287 / USINAGEM</span>
+                    </div>
+                    <p class="text-xs text-slate-400">Guia técnico explicativo, exemplos resolvidos passo a passo e simuladores para Torneamento e Fresamento</p>
+                </div>
+            </div>
+
+            <!-- Navegação Rápida entre Seções -->
+            <nav class="flex items-center gap-1.5 bg-slate-800/90 p-1 rounded-xl border border-slate-700/80 self-start md:self-auto overflow-x-auto max-w-full">
+                <a href="#secao-avanco" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-200 hover:text-white hover:bg-slate-700 transition whitespace-nowrap">
+                    1. Avanço (v<sub>f</sub>)
+                </a>
+                <a href="#secao-rugosidade" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-200 hover:text-white hover:bg-slate-700 transition whitespace-nowrap">
+                    2. Rugosidade (R<sub>a</sub> / R<sub>t</sub>)
+                </a>
+                <a href="#secao-pratica" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-200 hover:text-white hover:bg-slate-700 transition whitespace-nowrap">
+                    3. Notas Práticas
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+
+        <!-- ===================================================================== -->
+        <!-- SEÇÃO 1: CÁLCULO DE AVANÇO DA FERRAMENTA DE CORTE                     -->
+        <!-- ===================================================================== -->
+        <section id="secao-avanco" class="scroll-mt-24 space-y-6">
+            <!-- Título da Seção -->
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between border-b border-slate-300 pb-3 gap-2">
+                <div>
+                    <span class="text-xs font-mono font-bold uppercase tracking-wider text-blue-600">Módulo 01 — Cinemática de Corte</span>
+                    <h2 class="text-2xl font-bold text-slate-900 mt-0.5">Cálculo de Avanço da Ferramenta de Corte (<span class="font-mono">v<sub>f</sub></span>)</h2>
+                </div>
+                <span class="text-xs font-mono text-slate-500 bg-white px-3 py-1 rounded-lg border border-slate-200">Unidade Padrão: mm/min</span>
+            </div>
+
+            <!-- Explicação Teórica + Tabela Resumo -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Cards das Equações (7 colunas) -->
+                <div class="lg:col-span-7 space-y-5">
+                    <p class="text-sm text-slate-600 leading-relaxed bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm">
+                        O cálculo do avanço (<strong class="font-mono text-slate-800">v<sub>f</sub></strong>) determina a velocidade linear com que a ferramenta de corte se desloca ao longo da peça (expressa em <strong>mm/min</strong>). Como a cinemática muda dependendo de quem executa o movimento rotativo, a fórmula base se adapta para <strong>Torneamento</strong> e <strong>Fresamento / Furação</strong>.
+                    </p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Card Torneamento -->
+                        <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 text-xs font-bold uppercase tracking-wide">
+                                        1. Torneamento
+                                    </span>
+                                    <span class="text-[11px] text-slate-400 font-medium">Peça gira</span>
+                                </div>
+                                <p class="text-xs text-slate-600 mb-3">
+                                    No torno, parte-se do <strong>avanço por rotação (<span class="font-mono">f</span>)</strong> em <span class="font-mono">mm/rot</span>, que indica quanto a pastilha avança a cada volta completa da placa:
+                                </p>
+                                <!-- Caixa de Fórmula -->
+                                <div class="bg-slate-900 text-white rounded-xl p-3.5 text-center space-y-2 border border-slate-800">
+                                    <div class="font-mono text-lg font-bold text-blue-400">
+                                        v<sub>f</sub> = f &times; n
+                                    </div>
+                                    <div class="text-xs text-slate-300 border-t border-slate-800 pt-2 flex items-center justify-center">
+                                        <span>n =</span>
+                                        <span class="math-frac text-sky-300">
+                                            <span class="math-num">V<sub>c</sub> &times; 1000</span>
+                                            <span class="math-den">&pi; &times; D</span>
+                                        </span>
+                                        <span class="text-[11px] text-slate-400 ml-1">(rpm)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <ul class="mt-3 pt-3 border-t border-slate-100 text-xs text-slate-600 space-y-1">
+                                <li><strong class="font-mono text-slate-800">f</strong>: Avanço por rotação (<span class="font-mono">mm/rot</span>)</li>
+                                <li><strong class="font-mono text-slate-800">V<sub>c</sub></strong>: Velocidade de corte (<span class="font-mono">m/min</span>)</li>
+                                <li><strong class="font-mono text-slate-800">D</strong>: Diâmetro usinado da peça (<span class="font-mono">mm</span>)</li>
+                            </ul>
+                        </div>
+
+                        <!-- Card Fresamento -->
+                        <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-bold uppercase tracking-wide">
+                                        2. Fresamento
+                                    </span>
+                                    <span class="text-[11px] text-slate-400 font-medium">Ferramenta gira</span>
+                                </div>
+                                <p class="text-xs text-slate-600 mb-3">
+                                    Na fresadora, a ferramenta possui múltiplas arestas. Usa-se o <strong>avanço por dente (<span class="font-mono">f<sub>z</sub></span>)</strong> em <span class="font-mono">mm/dente</span> multiplicado pelo nº de insertos (<span class="font-mono">Z</span>):
+                                </p>
+                                <!-- Caixa de Fórmula -->
+                                <div class="bg-slate-900 text-white rounded-xl p-3.5 text-center space-y-2 border border-slate-800">
+                                    <div class="font-mono text-lg font-bold text-indigo-400">
+                                        v<sub>f</sub> = f<sub>z</sub> &times; Z &times; n
+                                    </div>
+                                    <div class="text-xs text-slate-300 border-t border-slate-800 pt-2 flex items-center justify-center">
+                                        <span>n =</span>
+                                        <span class="math-frac text-indigo-300">
+                                            <span class="math-num">V<sub>c</sub> &times; 1000</span>
+                                            <span class="math-den">&pi; &times; D<sub>c</sub></span>
+                                        </span>
+                                        <span class="text-[11px] text-slate-400 ml-1">(rpm)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <ul class="mt-3 pt-3 border-t border-slate-100 text-xs text-slate-600 space-y-1">
+                                <li><strong class="font-mono text-slate-800">f<sub>z</sub></strong>: Avanço por dente (<span class="font-mono">mm/dente</span>)</li>
+                                <li><strong class="font-mono text-slate-800">Z</strong>: Número efetivo de dentes / insertos</li>
+                                <li><strong class="font-mono text-slate-800">D<sub>c</sub></strong>: Diâmetro da fresa (<span class="font-mono">mm</span>)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Tabela Comparativa -->
+                    <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+                        <div class="px-5 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-700">Resumo das Variáveis e Unidades</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="border-b border-slate-200 bg-slate-50/50 text-slate-500">
+                                        <th class="py-2.5 px-4 font-semibold">Operação</th>
+                                        <th class="py-2.5 px-4 font-semibold">Entrada de Catálogo</th>
+                                        <th class="py-2.5 px-4 font-semibold">Nº de Arestas</th>
+                                        <th class="py-2.5 px-4 font-semibold">Fórmula Final (v<sub>f</sub>)</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <tr>
+                                        <td class="py-2.5 px-4 font-semibold text-slate-800">Torneamento / Furação</td>
+                                        <td class="py-2.5 px-4 font-mono text-blue-700">f (mm/rot)</td>
+                                        <td class="py-2.5 px-4 font-mono">1 (ou incluso em f)</td>
+                                        <td class="py-2.5 px-4 font-mono font-bold text-slate-900">v<sub>f</sub> = f &times; n</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2.5 px-4 font-semibold text-slate-800">Fresamento</td>
+                                        <td class="py-2.5 px-4 font-mono text-indigo-700">f<sub>z</sub> (mm/dente)</td>
+                                        <td class="py-2.5 px-4 font-mono">Z (nº de dentes)</td>
+                                        <td class="py-2.5 px-4 font-mono font-bold text-slate-900">v<sub>f</sub> = f<sub>z</sub> &times; Z &times; n</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Exemplo Resolvido (Fresamento) -->
+                    <div class="bg-gradient-to-br from-slate-800 to-slate-900 text-white rounded-2xl p-5 shadow-md border border-slate-700">
+                        <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-700/80">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono text-xs font-bold">EXEMPLO RESOLVIDO</span>
+                                <h3 class="text-sm font-bold text-white">Fresamento de Bloco de Aço</h3>
+                            </div>
+                            <button onclick="loadFeedExample()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-lg shadow transition flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                </svg>
+                                Simular na Calculadora
+                            </button>
+                        </div>
+                        <p class="text-xs text-slate-300 mt-3 leading-relaxed">
+                            Dados: Fresa de <strong class="font-mono text-white">&Oslash; 50 mm</strong> (<span class="font-mono">D<sub>c</sub></span>) com <strong class="font-mono text-white">5 insertos</strong> (<span class="font-mono">Z</span>), <strong class="font-mono text-white">V<sub>c</sub> = 180 m/min</strong> e <strong class="font-mono text-white">f<sub>z</sub> = 0,15 mm/dente</strong>.
+                        </p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                            <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-700/70">
+                                <span class="text-[11px] font-bold uppercase text-sky-400 block mb-1">Passo 1: Rotação (n)</span>
+                                <div class="font-mono text-xs text-slate-200">
+                                    n = (180 &times; 1000) / (&pi; &times; 50) &approx; <strong class="text-white text-sm">1.146 rpm</strong>
+                                </div>
+                            </div>
+                            <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-700/70">
+                                <span class="text-[11px] font-bold uppercase text-emerald-400 block mb-1">Passo 2: Avanço Linear (v<sub>f</sub>)</span>
+                                <div class="font-mono text-xs text-slate-200">
+                                    v<sub>f</sub> = 0,15 &times; 5 &times; 1146 &approx; <strong class="text-emerald-300 text-sm">859,5 mm/min</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calculadora Interativa de Avanço (5 colunas) -->
+                <div class="lg:col-span-5">
+                    <div class="bg-white rounded-2xl border-2 border-blue-600/20 shadow-md p-5 space-y-5 sticky top-20">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                                Calculadora de Avanço e RPM
+                            </h3>
+                            <span class="text-[11px] font-mono bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-semibold">Tempo Real</span>
+                        </div>
+
+                        <!-- Seletor de Operação -->
+                        <div class="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl border border-slate-200">
+                            <button type="button" id="btnOpMilling" onclick="setFeedOp('milling')" class="py-2 px-3 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow">
+                                Fresamento (f<sub>z</sub> &middot; Z)
+                            </button>
+                            <button type="button" id="btnOpTurning" onclick="setFeedOp('turning')" class="py-2 px-3 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900">
+                                Torneamento (f)
+                            </button>
+                        </div>
+
+                        <!-- Campos de Entrada -->
+                        <div class="space-y-3.5">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label for="feedDiameter" id="lblFeedDiameter" class="block text-xs font-semibold text-slate-700 mb-1">Diâmetro Fresa D<sub>c</sub> (mm)</label>
+                                    <input type="number" id="feedDiameter" value="50" min="0.1" step="any" oninput="calcFeed()" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-mono text-sm font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label for="feedVc" class="block text-xs font-semibold text-slate-700 mb-1">Vel. Corte V<sub>c</sub> (m/min)</label>
+                                    <input type="number" id="feedVc" value="180" min="1" step="any" oninput="calcFeed()" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-mono text-sm font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                                </div>
+                            </div>
+
+                            <!-- Inputs específicos de Fresamento -->
+                            <div id="millingInputs" class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label for="feedFz" class="block text-xs font-semibold text-slate-700 mb-1">Avanço/Dente f<sub>z</sub> (mm)</label>
+                                    <input type="number" id="feedFz" value="0.15" min="0.001" step="0.01" oninput="calcFeed()" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-mono text-sm font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label for="feedZ" class="block text-xs font-semibold text-slate-700 mb-1">Nº de Dentes (Z)</label>
+                                    <input type="number" id="feedZ" value="5" min="1" max="100" step="1" oninput="calcFeed()" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-mono text-sm font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                                </div>
+                            </div>
+
+                            <!-- Input específico de Torneamento -->
+                            <div id="turningInputs" class="hidden">
+                                <label for="feedF" class="block text-xs font-semibold text-slate-700 mb-1">Avanço por Rotação f (mm/rot)</label>
+                                <input type="number" id="feedF" value="0.15" min="0.001" step="0.01" oninput="calcFeed()" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-mono text-sm font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            </div>
+
+                            <!-- Comprimento opcional para tempo de corte -->
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <label for="feedLength" class="text-xs font-semibold text-slate-700">Comprimento de Corte L (mm)</label>
+                                    <span class="text-[10px] text-slate-400">Opcional (calcula tempo t<sub>c</sub>)</span>
+                                </div>
+                                <input type="number" id="feedLength" value="250" min="1" step="any" oninput="calcFeed()" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-mono text-sm font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            </div>
+                        </div>
+
+                        <!-- Alerta de Validação -->
+                        <div id="feedWarning" class="hidden p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium">
+                            Insira valores maiores que zero para calcular os parâmetros.
+                        </div>
+
+                        <!-- Resultados Calculados -->
+                        <div class="bg-slate-900 rounded-xl p-4 text-white space-y-3">
+                            <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
+                                <div>
+                                    <span class="text-[11px] uppercase tracking-wider text-slate-400 block">Velocidade de Avanço (v<sub>f</sub>)</span>
+                                    <span class="text-[11px] text-slate-500">Avanço linear da mesa / carro</span>
+                                </div>
+                                <div class="text-right">
+                                    <span id="resVf" class="font-mono text-2xl font-bold text-emerald-400">859.4</span>
+                                    <span class="font-mono text-xs text-slate-400 ml-1">mm/min</span>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-3 gap-2 pt-1 text-center">
+                                <div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/60">
+                                    <span class="text-[10px] uppercase text-slate-400 block">Rotação (n)</span>
+                                    <span id="resRpm" class="font-mono text-sm font-bold text-sky-300">1146</span>
+                                    <span class="text-[10px] text-slate-400 block">rpm</span>
+                                </div>
+                                <div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/60">
+                                    <span class="text-[10px] uppercase text-slate-400 block">Avanço/Volta (f)</span>
+                                    <span id="resFrev" class="font-mono text-sm font-bold text-white">0.750</span>
+                                    <span class="text-[10px] text-slate-400 block">mm/rot</span>
+                                </div>
+                                <div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/60">
+                                    <span class="text-[10px] uppercase text-slate-400 block">Tempo (t<sub>c</sub>)</span>
+                                    <span id="resTime" class="font-mono text-sm font-bold text-amber-300">17.5 s</span>
+                                    <span id="resTimeMin" class="text-[10px] text-slate-400 block">0.29 min</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================================== -->
+        <!-- SEÇÃO 2: CÁLCULO DE RUGOSIDADE SUPERFICIAL TEÓRICA (Ra e Rt/Rz)       -->
+        <!-- ===================================================================== -->
+        <section id="secao-rugosidade" class="scroll-mt-24 space-y-6 pt-4 border-t border-slate-300">
+            <!-- Título da Seção -->
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between border-b border-slate-300 pb-3 gap-2">
+                <div>
+                    <span class="text-xs font-mono font-bold uppercase tracking-wider text-emerald-600">Módulo 02 — Microgeometria de Superfície</span>
+                    <h2 class="text-2xl font-bold text-slate-900 mt-0.5">Cálculo de Rugosidade Superficial (<span class="font-mono">R<sub>a</sub></span> e <span class="font-mono">R<sub>t</sub> / R<sub>z</sub></span>)</h2>
+                </div>
+                <span class="text-xs font-mono text-slate-500 bg-white px-3 py-1 rounded-lg border border-slate-200">Unidade Padrão: &mu;m (micrômetros)</span>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Coluna Esquerda: Teoria, Fórmulas e Exemplo Resolvido (6 colunas) -->
+                <div class="lg:col-span-6 space-y-5">
+                    <p class="text-sm text-slate-600 leading-relaxed bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm">
+                        No torneamento e mandrilamento, a rugosidade teórica é formada pelos sulcos helicoidais deixados pelo <strong>raio de ponta do inserto (<span class="font-mono">r<sub>&varepsilon;</sub></span>)</strong> a cada rotação com <strong>avanço (<span class="font-mono">f</span>)</strong>. Note que a rugosidade cresce com o <strong>quadrado do avanço (<span class="font-mono">f&sup2;</span>)</strong>: dobrar o avanço quadruplica a rugosidade.
+                    </p>
+
+                    <!-- Três Cards de Fórmulas -->
+                    <div class="space-y-3.5">
+                        <!-- Fórmula 1: Rt / Rz -->
+                        <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div class="space-y-1">
+                                <span class="text-xs font-bold uppercase tracking-wider text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">1. Altura Total Pico-Vale</span>
+                                <h3 class="text-sm font-bold text-slate-900 pt-1">Rugosidade Máxima Teórica (<span class="font-mono">R<sub>t</sub></span> / <span class="font-mono">R<sub>z</sub></span>)</h3>
+                                <p class="text-xs text-slate-500">Distância vertical entre o pico mais alto e o vale mais profundo do sulco teórico.</p>
+                            </div>
+                            <div class="bg-slate-900 text-amber-300 px-4 py-3 rounded-xl font-mono text-sm font-bold shrink-0 text-center border border-slate-800">
+                                R<sub>t</sub> &approx;
+                                <span class="math-frac">
+                                    <span class="math-num">f<sup>2</sup></span>
+                                    <span class="math-den">8 &times; r<sub>&varepsilon;</sub></span>
+                                </span>
+                                &times; 1000
+                            </div>
+                        </div>
+
+                        <!-- Fórmula 2: Ra -->
+                        <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div class="space-y-1">
+                                <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">2. Média Aritmética</span>
+                                <h3 class="text-sm font-bold text-slate-900 pt-1">Rugosidade Média (<span class="font-mono">R<sub>a</sub></span>)</h3>
+                                <p class="text-xs text-slate-500">Integração geométrica do arco resulta na relação direta <strong class="font-mono text-slate-700">R<sub>t</sub> &approx; 4 &times; R<sub>a</sub></strong>.</p>
+                            </div>
+                            <div class="bg-slate-900 text-emerald-300 px-4 py-3 rounded-xl font-mono text-sm font-bold shrink-0 text-center border border-slate-800">
+                                R<sub>a</sub> &approx;
+                                <span class="math-frac">
+                                    <span class="math-num">f<sup>2</sup></span>
+                                    <span class="math-den">32 &times; r<sub>&varepsilon;</sub></span>
+                                </span>
+                                &times; 1000
+                            </div>
+                        </div>
+
+                        <!-- Fórmula 3: Inversa -->
+                        <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div class="space-y-1">
+                                <span class="text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">3. Cálculo Inverso (Projeto)</span>
+                                <h3 class="text-sm font-bold text-slate-900 pt-1">Avanço Máximo (<span class="font-mono">f<sub>máx</sub></span>) para um <span class="font-mono">R<sub>a</sub></span></h3>
+                                <p class="text-xs text-slate-500">Define o avanço limite para atender a cota de rugosidade exigida no desenho técnico.</p>
+                            </div>
+                            <div class="bg-slate-900 text-sky-300 px-4 py-3 rounded-xl font-mono text-sm font-bold shrink-0 text-center border border-slate-800">
+                                f<sub>máx</sub> = &radic;<span class="border-t border-sky-300 pt-0.5 inline-block px-1">(R<sub>a</sub> &times; 32 &times; r<sub>&varepsilon;</sub>) / 1000</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Exemplo Resolvido (Rugosidade) -->
+                    <div class="bg-gradient-to-br from-slate-800 to-slate-900 text-white rounded-2xl p-5 shadow-md border border-slate-700">
+                        <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-700/80">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono text-xs font-bold">EXEMPLO RESOLVIDO</span>
+                                <h3 class="text-sm font-bold text-white">Torneamento de Acabamento</h3>
+                            </div>
+                            <button onclick="loadRoughnessExample()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg shadow transition flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                </svg>
+                                Simular na Calculadora
+                            </button>
+                        </div>
+                        <p class="text-xs text-slate-300 mt-3 leading-relaxed">
+                            Dados: Pastilha com raio de ponta <strong class="font-mono text-white">r<sub>&varepsilon;</sub> = 0,8 mm</strong> e avanço de acabamento <strong class="font-mono text-white">f = 0,15 mm/rot</strong>.
+                        </p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                            <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-700/70">
+                                <span class="text-[11px] font-bold uppercase text-amber-400 block mb-1">1. Rugosidade Total (R<sub>t</sub> / R<sub>z</sub>)</span>
+                                <div class="font-mono text-xs text-slate-200">
+                                    R<sub>t</sub> = (0,15&sup2; / (8 &times; 0,8)) &times; 1000 &approx; <strong class="text-amber-300 text-sm">3,52 &mu;m</strong>
+                                </div>
+                            </div>
+                            <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-700/70">
+                                <span class="text-[11px] font-bold uppercase text-emerald-400 block mb-1">2. Rugosidade Média (R<sub>a</sub>)</span>
+                                <div class="font-mono text-xs text-slate-200">
+                                    R<sub>a</sub> = (0,15&sup2; / (32 &times; 0,8)) &times; 1000 &approx; <strong class="text-emerald-300 text-sm">0,88 &mu;m</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Coluna Direita: Calculadora Interativa + Diagrama Microgeométrico SVG (6 colunas) -->
+                <div class="lg:col-span-6 space-y-5">
+                    <div class="bg-white rounded-2xl border-2 border-emerald-600/20 shadow-md p-5 space-y-5">
+                        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                                Simulador de Rugosidade e Perfil
+                            </h3>
+
+                            <!-- Alternador Direto vs Inverso -->
+                            <div class="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
+                                <button type="button" id="btnRoughDirect" onclick="setRoughMode('direct')" class="px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-600 text-white shadow transition">
+                                    Calcular R<sub>a</sub> / R<sub>t</sub>
+                                </button>
+                                <button type="button" id="btnRoughInverse" onclick="setRoughMode('inverse')" class="px-2.5 py-1 rounded-md text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+                                    Achar Avanço (f<sub>máx</sub>)
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Controles de Entrada -->
+                        <div class="space-y-4">
+                            <!-- Raio de Ponta da Ferramenta -->
+                            <div>
+                                <div class="flex justify-between items-center mb-1.5">
+                                    <label for="roughRadius" class="text-xs font-semibold text-slate-700">Raio de Ponta do Inserto r<sub>&varepsilon;</sub> (mm)</label>
+                                    <div class="flex gap-1">
+                                        <button type="button" onclick="setNoseRadius(0.2)" class="px-2 py-0.5 text-[11px] font-mono bg-slate-100 hover:bg-slate-200 text-slate-700 rounded border border-slate-200 transition">0.2</button>
+                                        <button type="button" onclick="setNoseRadius(0.4)" class="px-2 py-0.5 text-[11px] font-mono bg-slate-100 hover:bg-slate-200 text-slate-700 rounded border border-slate-200 transition">0.4</button>
+                                        <button type="button" onclick="setNoseRadius(0.8)" class="px-2 py-0.5 text-[11px] font-mono bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold rounded border border-emerald-200 transition">0.8</button>
+                                        <button type="button" onclick="setNoseRadius(1.2)" class="px-2 py-0.5 text-[11px] font-mono bg-slate-100 hover:bg-slate-200 text-slate-700 rounded border border-slate-200 transition">1.2</button>
+                                        <button type="button" onclick="setNoseRadius(1.6)" class="px-2 py-0.5 text-[11px] font-mono bg-slate-100 hover:bg-slate-200 text-slate-700 rounded border border-slate-200 transition">1.6</button>
+                                    </div>
+                                </div>
+                                <input type="number" id="roughRadius" value="0.8" min="0.05" max="10" step="0.05" oninput="calcRoughness()" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-mono text-sm font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            </div>
+
+                            <!-- Input Modo Direto: Avanço f -->
+                            <div id="roughDirectInputBox">
+                                <div class="flex justify-between items-center mb-1">
+                                    <label for="roughFeed" class="text-xs font-semibold text-slate-700">Avanço por Rotação f (mm/rot)</label>
+                                    <span id="roughFeedSliderLabel" class="font-mono text-xs font-bold text-emerald-700">0.15 mm/rot</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <input type="range" id="roughFeedRange" min="0.02" max="0.80" step="0.01" value="0.15" oninput="syncFeedFromRange(this.value)" class="flex-1 accent-emerald-600 cursor-pointer">
+                                    <input type="number" id="roughFeed" value="0.15" min="0.01" max="5" step="0.01" oninput="syncFeedFromNumber(this.value)" class="w-28 px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-mono text-sm font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                </div>
+                            </div>
+
+                            <!-- Input Modo Inverso: Meta de Ra -->
+                            <div id="roughInverseInputBox" class="hidden">
+                                <div class="flex justify-between items-center mb-1">
+                                    <label for="targetRa" class="text-xs font-semibold text-slate-700">Rugosidade R<sub>a</sub> Desejada no Desenho (&mu;m)</label>
+                                    <div class="flex gap-1">
+                                        <button type="button" onclick="setTargetRa(0.4)" class="px-2 py-0.5 text-[10px] font-mono bg-slate-100 hover:bg-slate-200 rounded border border-slate-200">N5 (0.4)</button>
+                                        <button type="button" onclick="setTargetRa(0.8)" class="px-2 py-0.5 text-[10px] font-mono bg-slate-100 hover:bg-slate-200 rounded border border-slate-200">N6 (0.8)</button>
+                                        <button type="button" onclick="setTargetRa(1.6)" class="px-2 py-0.5 text-[10px] font-mono bg-slate-100 hover:bg-slate-200 rounded border border-slate-200">N7 (1.6)</button>
+                                        <button type="button" onclick="setTargetRa(3.2)" class="px-2 py-0.5 text-[10px] font-mono bg-slate-100 hover:bg-slate-200 rounded border border-slate-200">N8 (3.2)</button>
+                                    </div>
+                                </div>
+                                <input type="number" id="targetRa" value="0.88" min="0.05" max="50" step="0.05" oninput="calcRoughness()" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-mono text-sm font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            </div>
+                        </div>
+
+                        <!-- Alertas Práticos Dinâmicos -->
+                        <div id="roughAlertBox" class="hidden p-3 rounded-xl text-xs font-medium flex items-start gap-2.5">
+                            <svg class="w-4 h-4 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                            <span id="roughAlertText"></span>
+                        </div>
+
+                        <!-- Cartões de Resultados Numéricos -->
+                        <div class="grid grid-cols-3 gap-3">
+                            <div class="bg-emerald-50/80 border border-emerald-200 rounded-xl p-3 text-center">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-800 block">R<sub>a</sub> Teórico</span>
+                                <span id="resRa" class="font-mono text-xl font-bold text-emerald-700 mt-0.5 block">0.88 &mu;m</span>
+                                <span id="resIsoGrade" class="text-[10px] font-mono text-emerald-600 font-semibold">Classe N6</span>
+                            </div>
+
+                            <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-3 text-center">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-amber-800 block">R<sub>t</sub> / R<sub>z</sub> Teórico</span>
+                                <span id="resRt" class="font-mono text-xl font-bold text-amber-700 mt-0.5 block">3.52 &mu;m</span>
+                                <span class="text-[10px] font-mono text-amber-600">Pico–Vale (4&times;R<sub>a</sub>)</span>
+                            </div>
+
+                            <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 text-center text-white">
+                                <span id="resThirdLabel" class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Estimativa Real</span>
+                                <span id="resThirdVal" class="font-mono text-lg font-bold text-sky-300 mt-0.5 block">1.06 &mu;m</span>
+                                <span id="resThirdSub" class="text-[10px] text-slate-400">R<sub>a</sub> +20% fábrica</span>
+                            </div>
+                        </div>
+
+                        <!-- Diagrama Microgeométrico SVG em Tempo Real -->
+                        <div class="space-y-1.5">
+                            <div class="flex items-center justify-between text-[11px] text-slate-500">
+                                <span class="font-bold uppercase tracking-wider text-slate-600">Perfil Microgeométrico Amplificado (Corte)</span>
+                                <span class="font-mono">Passo: f | Raio: r<sub>&varepsilon;</sub></span>
+                            </div>
+                            <div class="w-full bg-slate-50 cad-grid rounded-xl border border-slate-200 overflow-hidden">
+                                <svg id="roughnessSvg" class="w-full h-48" viewBox="0 0 600 200" preserveAspectRatio="xMidYMid meet"></svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================================== -->
+        <!-- SEÇÃO 3: NOTAS PRÁTICAS DE CHÃO DE FÁBRICA                            -->
+        <!-- ===================================================================== -->
+        <section id="secao-pratica" class="scroll-mt-24 space-y-5 pt-4 border-t border-slate-300">
+            <div>
+                <span class="text-xs font-mono font-bold uppercase tracking-wider text-slate-500">Módulo 03 — Aplicação Industrial</span>
+                <h2 class="text-xl font-bold text-slate-900 mt-0.5">Diferença entre Teórico e Real (Chão de Fábrica)</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm space-y-2">
+                    <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-mono font-bold text-sm">+20%</div>
+                    <h3 class="text-sm font-bold text-slate-900">Fator de Correção Real</h3>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Na leitura do rugosímetro, o valor real costuma ficar <strong>15% a 30% acima</strong> do teórico devido à deformação plástica do cavaco, vibração da máquina e desgaste natural da aresta.
+                    </p>
+                </div>
+
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm space-y-2">
+                    <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-mono font-bold text-xs">f<sub>mín</sub></div>
+                    <h3 class="text-sm font-bold text-slate-900">Avanço Muito Baixo (&lt; 0,05)</h3>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Quando o avanço é menor que o raio de arredondamento da aresta de corte, a ferramenta passa a <strong>esmagar (brunir)</strong> o material em vez de cisalhar, piorando a rugosidade real.
+                    </p>
+                </div>
+
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm space-y-2">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-mono font-bold text-xs">Wiper</div>
+                    <h3 class="text-sm font-bold text-slate-900">Pastilhas Wiper (Alisadoras)</h3>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Inserto com geometria multi-raio na ponta que aplana os picos dos sulcos. Permite <strong>dobrar o avanço (2&times; f)</strong> mantendo exatamente o mesmo acabamento superficial <span class="font-mono">R<sub>a</sub></span>.
+                    </p>
+                </div>
+
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm space-y-2">
+                    <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center font-mono font-bold text-xs">BUE</div>
+                    <h3 class="text-sm font-bold text-slate-900">Aresta Postiça de Corte</h3>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Velocidade de corte (<span class="font-mono">V<sub>c</sub></span>) muito baixa em aços dúcteis faz o material soldar na ponta do inserto e se desprender periodicamente, riscando a superfície usinada.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Rodapé -->
+    <footer class="bg-white border-t border-slate-200 mt-12 py-4">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+            <p>Guia Interativo de Usinagem — Cinemática de Avanço e Microgeometria de Superfície (<span class="font-mono">R<sub>a</sub> / R<sub>t</sub> / R<sub>z</sub></span>).</p>
+            <p class="font-mono text-[11px] text-slate-400">R<sub>t</sub> &approx; 1000&middot;f&sup2; / (8&middot;r<sub>&varepsilon;</sub>) &nbsp;|&nbsp; R<sub>a</sub> &approx; R<sub>t</sub> / 4</p>
+        </div>
+    </footer>
+
+    <script>
+        /**
+         * ============================================================================
+         * LÓGICA INTERATIVA: CÁLCULO DE AVANÇO E RUGOSIDADE SUPERFICIAL
+         * ============================================================================
+         */
+
+        let feedOpMode = 'milling'; // 'milling' ou 'turning'
+        let roughCalcMode = 'direct'; // 'direct' ou 'inverse'
+
+        // ----------------------------------------------------------------------------
+        // MÓDULO 1: CÁLCULO DE AVANÇO (vf) E ROTAÇÃO (n)
+        // ----------------------------------------------------------------------------
+        function setFeedOp(mode) {
+            feedOpMode = mode;
+            const btnMilling = document.getElementById('btnOpMilling');
+            const btnTurning = document.getElementById('btnOpTurning');
+            const millingBox = document.getElementById('millingInputs');
+            const turningBox = document.getElementById('turningInputs');
+            const lblDiam = document.getElementById('lblFeedDiameter');
+
+            if (mode === 'milling') {
+                btnMilling.className = "py-2 px-3 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow";
+                btnTurning.className = "py-2 px-3 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900";
+                millingBox.classList.remove('hidden');
+                turningBox.classList.add('hidden');
+                lblDiam.innerHTML = 'Diâmetro Fresa D<sub>c</sub> (mm)';
+            } else {
+                btnTurning.className = "py-2 px-3 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow";
+                btnMilling.className = "py-2 px-3 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900";
+                turningBox.classList.remove('hidden');
+                millingBox.classList.add('hidden');
+                lblDiam.innerHTML = 'Diâmetro Peça D (mm)';
+            }
+            calcFeed();
+        }
+
+        function loadFeedExample() {
+            setFeedOp('milling');
+            document.getElementById('feedDiameter').value = 50;
+            document.getElementById('feedVc').value = 180;
+            document.getElementById('feedFz').value = 0.15;
+            document.getElementById('feedZ').value = 5;
+            document.getElementById('feedLength').value = 250;
+            calcFeed();
+        }
+
+        function calcFeed() {
+            const D = parseFloat(document.getElementById('feedDiameter').value);
+            const Vc = parseFloat(document.getElementById('feedVc').value);
+            const L = parseFloat(document.getElementById('feedLength').value);
+            const warnEl = document.getElementById('feedWarning');
+
+            let fRev = 0;
+            if (feedOpMode === 'milling') {
+                const fz = parseFloat(document.getElementById('feedFz').value);
+                const Z = parseFloat(document.getElementById('feedZ').value);
+                if (isNaN(D) || D <= 0 || isNaN(Vc) || Vc <= 0 || isNaN(fz) || fz <= 0 || isNaN(Z) || Z <= 0) {
+                    warnEl.classList.remove('hidden');
+                    return;
+                }
+                fRev = fz * Z;
+            } else {
+                const f = parseFloat(document.getElementById('feedF').value);
+                if (isNaN(D) || D <= 0 || isNaN(Vc) || Vc <= 0 || isNaN(f) || f <= 0) {
+                    warnEl.classList.remove('hidden');
+                    return;
+                }
+                fRev = f;
+            }
+
+            warnEl.classList.add('hidden');
+
+            // n = (Vc * 1000) / (pi * D)
+            const rpm = (Vc * 1000) / (Math.PI * D);
+            // vf = f_rev * n
+            const vf = fRev * rpm;
+
+            document.getElementById('resVf').textContent = vf.toFixed(1);
+            document.getElementById('resRpm').textContent = Math.round(rpm);
+            document.getElementById('resFrev').textContent = fRev.toFixed(3);
+
+            // Tempo de corte tc = L / vf
+            if (!isNaN(L) && L > 0 && vf > 0) {
+                const timeMin = L / vf;
+                const timeSec = timeMin * 60;
+                document.getElementById('resTime').textContent = timeSec < 120 ? `${timeSec.toFixed(1)} s` : `${timeMin.toFixed(2)} min`;
+                document.getElementById('resTimeMin').textContent = `${timeMin.toFixed(2)} min`;
+            } else {
+                document.getElementById('resTime').textContent = "--";
+                document.getElementById('resTimeMin').textContent = "--";
+            }
+        }
+
+        // ----------------------------------------------------------------------------
+        // MÓDULO 2: CÁLCULO DE RUGOSIDADE SUPERFICIAL (Ra e Rt/Rz) + SVG
+        // ----------------------------------------------------------------------------
+        function setRoughMode(mode) {
+            roughCalcMode = mode;
+            const btnDirect = document.getElementById('btnRoughDirect');
+            const btnInverse = document.getElementById('btnRoughInverse');
+            const directBox = document.getElementById('roughDirectInputBox');
+            const inverseBox = document.getElementById('roughInverseInputBox');
+
+            if (mode === 'direct') {
+                btnDirect.className = "px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-600 text-white shadow transition";
+                btnInverse.className = "px-2.5 py-1 rounded-md text-xs font-bold text-slate-600 hover:text-slate-900 transition";
+                directBox.classList.remove('hidden');
+                inverseBox.classList.add('hidden');
+            } else {
+                btnInverse.className = "px-2.5 py-1 rounded-md text-xs font-bold bg-blue-600 text-white shadow transition";
+                btnDirect.className = "px-2.5 py-1 rounded-md text-xs font-bold text-slate-600 hover:text-slate-900 transition";
+                inverseBox.classList.remove('hidden');
+                directBox.classList.add('hidden');
+            }
+            calcRoughness();
+        }
+
+        function setNoseRadius(val) {
+            document.getElementById('roughRadius').value = val;
+            calcRoughness();
+        }
+
+        function setTargetRa(val) {
+            document.getElementById('targetRa').value = val;
+            calcRoughness();
+        }
+
+        function syncFeedFromRange(val) {
+            document.getElementById('roughFeed').value = val;
+            document.getElementById('roughFeedSliderLabel').textContent = `${parseFloat(val).toFixed(2)} mm/rot`;
+            calcRoughness();
+        }
+
+        function syncFeedFromNumber(val) {
+            const num = parseFloat(val);
+            if (!isNaN(num)) {
+                document.getElementById('roughFeedRange').value = Math.min(Math.max(num, 0.02), 0.80);
+                document.getElementById('roughFeedSliderLabel').textContent = `${num.toFixed(2)} mm/rot`;
+            }
+            calcRoughness();
+        }
+
+        function loadRoughnessExample() {
+            setRoughMode('direct');
+            document.getElementById('roughRadius').value = 0.8;
+            syncFeedFromNumber(0.15);
+            document.getElementById('roughFeed').value = 0.15;
+            calcRoughness();
+        }
+
+        /**
+         * Classifica o Ra na escala padrão ISO (N1 a N12)
+         */
+        function getIsoRoughnessGrade(ra) {
+            if (ra <= 0.025) return "Classe N1 (Espelhado)";
+            if (ra <= 0.05)  return "Classe N2 (Lapidado)";
+            if (ra <= 0.1)   return "Classe N3 (Superacab.)";
+            if (ra <= 0.2)   return "Classe N4 (Retificado)";
+            if (ra <= 0.4)   return "Classe N5 (Acab. Fino)";
+            if (ra <= 0.8)   return "Classe N6 (Acabamento)";
+            if (ra <= 1.6)   return "Classe N7 (Acabamento)";
+            if (ra <= 3.2)   return "Classe N8 (Semi-acab.)";
+            if (ra <= 6.3)   return "Classe N9 (Usin. Média)";
+            if (ra <= 12.5)  return "Classe N10 (Desbaste)";
+            return "Classe N11+ (Desbaste Pesado)";
+        }
+
+        function calcRoughness() {
+            const r = parseFloat(document.getElementById('roughRadius').value);
+            const alertBox = document.getElementById('roughAlertBox');
+            const alertText = document.getElementById('roughAlertText');
+
+            if (isNaN(r) || r <= 0) return;
+
+            let f = 0;
+            let ra = 0;
+            let rt = 0;
+
+            if (roughCalcMode === 'direct') {
+                f = parseFloat(document.getElementById('roughFeed').value);
+                if (isNaN(f) || f <= 0) return;
+
+                // Rt = (f^2 / (8 * r)) * 1000
+                rt = (Math.pow(f, 2) / (8 * r)) * 1000;
+                // Ra = (f^2 / (32 * r)) * 1000
+                ra = (Math.pow(f, 2) / (32 * r)) * 1000;
+
+                document.getElementById('resThirdLabel').textContent = "Estimativa Real";
+                document.getElementById('resThirdVal').textContent = `${(ra * 1.2).toFixed(2)} µm`;
+                document.getElementById('resThirdSub').textContent = "Ra +20% fábrica";
+            } else {
+                ra = parseFloat(document.getElementById('targetRa').value);
+                if (isNaN(ra) || ra <= 0) return;
+
+                // f_max = sqrt((Ra * 32 * r) / 1000)
+                f = Math.sqrt((ra * 32 * r) / 1000);
+                rt = 4 * ra;
+
+                document.getElementById('resThirdLabel').textContent = "Avanço Máx (f)";
+                document.getElementById('resThirdVal').textContent = `${f.toFixed(3)}`;
+                document.getElementById('resThirdSub').textContent = "mm/rot permitido";
+            }
+
+            document.getElementById('resRa').textContent = `${ra.toFixed(2)} µm`;
+            document.getElementById('resRt').textContent = `${rt.toFixed(2)} µm`;
+            document.getElementById('resIsoGrade').textContent = getIsoRoughnessGrade(ra);
+
+            // Alertas práticos de usinagem
+            if (f < 0.05) {
+                alertBox.className = "p-3 rounded-xl text-xs font-medium flex items-start gap-2.5 bg-amber-50 border border-amber-200 text-amber-800";
+                alertText.innerHTML = `<strong>Atenção (f = ${f.toFixed(3)} mm/rot):</strong> Avanços abaixo de 0,05 mm/rot podem causar esmagamento/brunimento do cavaco em vez de corte limpo, elevando o R<sub>a</sub> real.`;
+                alertBox.classList.remove('hidden');
+            } else if (f >= 1.5 * r) {
+                alertBox.className = "p-3 rounded-xl text-xs font-medium flex items-start gap-2.5 bg-rose-50 border border-rose-200 text-rose-800";
+                alertText.innerHTML = `<strong>Limite Geométrico:</strong> O avanço (f = ${f.toFixed(2)} mm) está muito alto em relação ao raio (r<sub>&varepsilon;</sub> = ${r} mm). Use um inserto de raio maior ou reduza o avanço.`;
+                alertBox.classList.remove('hidden');
+            } else {
+                alertBox.classList.add('hidden');
+            }
+
+            renderRoughnessSVG(f, r, ra, rt);
+        }
+
+        /**
+         * Renderiza o perfil microgeométrico SVG ampliado (sulcos parabólicos + ponta da ferramenta + cotas)
+         */
+        function renderRoughnessSVG(f, r, ra, rt) {
+            const svg = document.getElementById('roughnessSvg');
+            const width = 600;
+            const height = 200;
+
+            // Escala visual didática para mostrar claramente a variação da altura dos picos e largura do passo
+            // Normaliza visualmente mantendo proporção intuitiva
+            const pitchPx = Math.min(Math.max(f * 520, 48), 165); // Largura de cada sulco em px
+            const peakHeightPx = Math.min(Math.max(rt * 7.5, 8), 78); // Altura pico-vale em px
+
+            const baseY = 152; // Fundo dos vales
+            const peakY = baseY - peakHeightPx; // Topo das cristas
+            const meanY = baseY - peakHeightPx * 0.333; // Linha média geométrica de parábola (1/3 da altura a partir da base)
+
+            // Gera os arcos parabólicos da superfície usinada
+            const startX = 40;
+            const endX = 460;
+            let wavePath = `M ${startX} ${baseY}`;
+            let currX = startX;
+            let grooves = [];
+
+            while (currX < endX) {
+                const nextX = currX + pitchPx;
+                const midX = (currX + nextX) / 2;
+                // Controle quadrático para formar a crista aguda entre dois vales arredondados
+                // Cada vale é um arco côncavo: desenhamos de crista a crista para representar o raio da ponta
+                currX = nextX;
+            }
+
+            // Construção precisa: cristas agudas no topo (peakY) e vales arredondados côncavos no fundo (baseY)
+            let surfaceD = `M ${startX} ${peakY}`;
+            let x = startX;
+            let grooveCenters = [];
+
+            while (x + pitchPx <= endX + 20) {
+                const xNext = x + pitchPx;
+                const xMid = (x + xNext) / 2;
+                grooveCenters.push({ x1: x, x2: xNext, xm: xMid });
+                // Curva quadrática com ponto de controle abaixo de baseY para que o vértice toque exatamente baseY
+                const ctrlY = 2 * baseY - peakY;
+                surfaceD += ` Q ${xMid} ${ctrlY} ${xNext} ${peakY}`;
+                x = xNext;
+            }
+            const lastX = x;
+            // Fecha o polígono do material metálico abaixo da superfície
+            const fillD = `${surfaceD} L ${lastX} ${height} L ${startX} ${height} Z`;
+
+            // Posiciona o inserto esquemático encaixado no segundo vale (ou primeiro disponível)
+            const activeGroove = grooveCenters.length > 1 ? grooveCenters[1] : grooveCenters[0];
+            const toolX = activeGroove ? activeGroove.xm : 150;
+            const toolRadiusVisual = Math.max(pitchPx * 0.62, 26);
+            const toolCenterY = baseY - toolRadiusVisual;
+
+            let svgHtml = `
+                <defs>
+                    <linearGradient id="metalGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#cbd5e1" />
+                        <stop offset="100%" stop-color="#94a3b8" />
+                    </linearGradient>
+                    <linearGradient id="insertGrad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.28" />
+                        <stop offset="100%" stop-color="#d97706" stop-opacity="0.45" />
+                    </linearGradient>
+                </defs>
+
+                <!-- Corpo Metálico da Peça Usinada -->
+                <path d="${fillD}" fill="url(#metalGrad)" />
+                <path d="${surfaceD}" fill="none" stroke="#334155" stroke-width="2.2" />
+
+                <!-- Ponta do Inserto (Esquemático encaixado no vale) -->
+                <path d="M ${toolX - toolRadiusVisual * 0.85} ${toolCenterY - 22} 
+                         L ${toolX - toolRadiusVisual * 0.72} ${baseY - toolRadiusVisual * 0.32} 
+                         A ${toolRadiusVisual} ${toolRadiusVisual} 0 0 0 ${toolX + toolRadiusVisual * 0.72} ${baseY - toolRadiusVisual * 0.32}
+                         L ${toolX + toolRadiusVisual * 0.85} ${toolCenterY - 22} Z"
+                      fill="url(#insertGrad)" stroke="#d97706" stroke-width="1.8" />
+                <text x="${toolX}" y="${Math.max(toolCenterY - 6, 16)}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="bold" fill="#b45309">
+                    rε = ${r} mm
+                </text>
+
+                <!-- Linha Média (Referência Ra) -->
+                <line x1="${startX - 10}" y1="${meanY}" x2="${lastX + 15}" y2="${meanY}" stroke="#059669" stroke-width="1.4" stroke-dasharray="5,3" />
+                <text x="${startX - 6}" y="${meanY - 5}" font-family="JetBrains Mono, monospace" font-size="10" font-weight="bold" fill="#047857">
+                    Linha Média (Ra = ${ra.toFixed(2)} µm)
+                </text>
+
+                <!-- Cota do Passo de Avanço (f) no primeiro sulco -->
+                ${grooveCenters.length > 0 ? `
+                    <line x1="${grooveCenters[0].x1}" y1="${peakY - 6}" x2="${grooveCenters[0].x1}" y2="${peakY - 26}" stroke="#2563eb" stroke-width="1" />
+                    <line x1="${grooveCenters[0].x2}" y1="${peakY - 6}" x2="${grooveCenters[0].x2}" y2="${peakY - 26}" stroke="#2563eb" stroke-width="1" />
+                    <line x1="${grooveCenters[0].x1}" y1="${peakY - 18}" x2="${grooveCenters[0].x2}" y2="${peakY - 18}" stroke="#2563eb" stroke-width="1.5" />
+                    <text x="${grooveCenters[0].xm}" y="${peakY - 23}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="bold" fill="#1d4ed8">
+                        f = ${f.toFixed(2)} mm
+                    </text>
+                ` : ''}
+
+                <!-- Cota Lateral de Altura Total Pico-Vale (Rt / Rz) -->
+                <line x1="${lastX + 8}" y1="${peakY}" x2="${lastX + 44}" y2="${peakY}" stroke="#d97706" stroke-width="1.2" stroke-dasharray="2,2" />
+                <line x1="${lastX + 8}" y1="${baseY}" x2="${lastX + 44}" y2="${baseY}" stroke="#d97706" stroke-width="1.2" stroke-dasharray="2,2" />
+                <line x1="${lastX + 34}" y1="${peakY}" x2="${lastX + 34}" y2="${baseY}" stroke="#d97706" stroke-width="1.8" />
+                <polygon points="${lastX + 34},${peakY} ${lastX + 31},${peakY + 5} ${lastX + 37},${peakY + 5}" fill="#d97706" />
+                <polygon points="${lastX + 34},${baseY} ${lastX + 31},${baseY - 5} ${lastX + 37},${baseY - 5}" fill="#d97706" />
+
+                <rect x="${lastX + 42}" y="${(peakY + baseY) / 2 - 14}" width="84" height="28" rx="5" fill="#fffbeb" stroke="#f59e0b" stroke-width="1" />
+                <text x="${lastX + 84}" y="${(peakY + baseY) / 2 - 2}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="bold" fill="#92400e">
+                    Rt / Rz
+                </text>
+                <text x="${lastX + 84}" y="${(peakY + baseY) / 2 + 10}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="bold" fill="#b45309">
+                    ${rt.toFixed(2)} µm
+                </text>
+            `;
+
+            svg.innerHTML = svgHtml;
+        }
+
+        // Inicialização ao carregar a página
+        window.addEventListener('DOMContentLoaded', () => {
+            calcFeed();
+            calcRoughness();
+        });
+    </script>
+</body>
+</html>
